@@ -1,0 +1,9 @@
+numpy~=2.3.1
+pandas~=2.3.0
+tqdm~=4.67.1
+joblib~=1.5.1
+matplotlib~=3.10.3
+scikit-learn~=1.7.0
+tsfel~=0.1.9
+pyquaternion~=0.9.9
+scipy~=1.16.0
