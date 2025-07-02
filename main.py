@@ -7,7 +7,7 @@ import os
 from constants import VALID_SENSORS, SEGMENTED_DATA_FOLDER, EXTRACTED_FEATURES_FOLDER, RANDOM_SEED
 from raw_data_processor import generate_segmented_dataset
 from feature_extractor import extract_features
-# from HAR import perform_model_selection, train_production_model
+from HAR import perform_model_configuration
 import numpy as np
 
 
@@ -17,12 +17,12 @@ import numpy as np
 GENERATE_SEGMENTED_DATASET = False
 EXTRACT_FEATURES = False
 ML_HAR = True
-# ML_MODEL_SELECTION = False
+ML_MODEL_TUNING = True
 # ML_TRAIN_PRODUCTION_MODEL = True
 
 # definition of folder_path
-RAW_DATA_FOLDER_PATH = 'G:\\Backup PrevOccupAI data\\Prevoccupai_HAR\\subject_data\\raw_signals_backups\\acquisitions'
-OUTPUT_FOLDER_PATH = 'G:\\Backup PrevOccupAI data\\Prevoccupai_HAR\\subject_data'
+RAW_DATA_FOLDER_PATH = 'E:\\Backup PrevOccupAI data\\Prevoccupai_HAR\\subject_data\\raw_signals_backups\\acquisitions'
+OUTPUT_FOLDER_PATH = 'E:\\Backup PrevOccupAI data\\Prevoccupai_HAR\\subject_data'
 
 
 # ------------------------------------------------------------------------------------------------------------------- #
@@ -61,13 +61,13 @@ if __name__ == '__main__':
         # path to folder containing the feature files for the different normalization types
         feature_data_path = os.path.join(OUTPUT_FOLDER_PATH, EXTRACTED_FEATURES_FOLDER)
 
-        # # perform model selection
-        # if ML_MODEL_SELECTION:
-        #
-        #     print("Evaluating different models (Random Forest vs. KNN vs. SVM)")
-        #     perform_model_selection(feature_data_path, balancing_type=balancing_type, window_size_samples=500)
-        #
-        # # train production model using the number of features and the normalization type found through model selection
+        # perform model selection
+        if ML_MODEL_TUNING:
+
+            print("Evaluating different models (Random Forest vs. KNN vs. SVM)")
+            perform_model_configuration(feature_data_path, balancing_type=balancing_type, window_size_samples=500)
+
+        # train production model using the number of features and the normalization type found through model selection
         # if ML_TRAIN_PRODUCTION_MODEL:
         #
         #     print("\ntraining and evaluating production model")
