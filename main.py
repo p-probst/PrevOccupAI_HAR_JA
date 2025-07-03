@@ -73,4 +73,4 @@ if __name__ == '__main__':
             label_map = {'sitting': 0, 'standing': 1, 'walking': 2}
 
             print("\ntesting the production models")
-            test_production_models(raw_data_path, label_map, fs=100, w_size_sec=0.5, load_sensors=VALID_SENSORS)
+            test_production_models(raw_data_path, label_map, fs=100, w_size_sec=5.0, load_sensors=VALID_SENSORS)

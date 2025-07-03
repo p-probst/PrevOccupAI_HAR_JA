@@ -6,10 +6,9 @@
   <component name="ChangeListManager">
     <list default="true" id="05428d1d-ca52-4ab9-9473-3478bc5e9e70" name="Changes" comment="added requirements.txt">
       <change beforePath="$PROJECT_DIR$/.idea/PrevOccupAI_HAR_JA.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/PrevOccupAI_HAR_JA.iml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/HAR/model_testing.py" beforeDir="false" afterPath="$PROJECT_DIR$/HAR/model_testing.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Results/KNN_results.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Results/Random Forest_results.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Results/SVM_results.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/main.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />

@@ -95,13 +95,13 @@ def test_production_models(raw_data_path: str, label_map: Dict[str, int], fs: in
             model_path = os.path.join(os.getcwd(),"Results", f"{model}.joblib")
 
             # get predictions
-            predictions = _test_production_model(model_path, features_df, true_labels, w_size_sec, fs)
+            predictions = _test_production_model(model_path, features_df, w_size_sec, fs)
 
             # calculate metrics
-            acc = round(accuracy_score(labels, predictions) * 100, 2)
-            precision = precision_score(labels, predictions, average='weighted')
-            recall = recall_score(labels, predictions, average='weighted')
-            f1 = f1_score(labels, predictions, average='weighted')
+            acc = round(accuracy_score(true_labels, predictions) * 100, 2)
+            precision = round(precision_score(true_labels, predictions, average='weighted')*100, 2)
+            recall = round(recall_score(true_labels, predictions, average='weighted')*100, 2)
+            f1 = round(f1_score(true_labels, predictions, average='weighted')*100, 2)
 
             # append results to the lists
             acc_list.append(acc)
@@ -124,7 +124,7 @@ def test_production_models(raw_data_path: str, label_map: Dict[str, int], fs: in
 # private functions
 # ------------------------------------------------------------------------------------------------------------------- #
 
-def _test_production_model(model_path: str, features: pd.DataFrame, labels: np.ndarray, w_size_sec, fs) -> List[int]:
+def _test_production_model(model_path: str, features: pd.DataFrame, w_size_sec, fs) -> List[int]:
 
     # load the model
     model, feature_names = load_production_model(model_path)
