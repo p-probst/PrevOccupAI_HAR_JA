@@ -7,7 +7,7 @@ import numpy as np
 import tsfel
 import matplotlib.pyplot as plt
 from typing import Optional, List, Dict, Tuple
-from sklearn.metrics import accuracy_score
+from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score
 
 # internal imports
 from constants import TXT
@@ -29,6 +29,9 @@ KNN = "KNN"
 
 
 def test_production_models(raw_data_path: str, label_map: Dict[str, int], fs: int, w_size_sec: float, load_sensors: Optional[List[str]] = None):
+
+    # list for holding the metrics for all subjects
+    results_list = []
 
     # list all folders within the raw_data_path
     subject_folders = os.listdir(raw_data_path)
@@ -92,21 +95,36 @@ def test_production_models(raw_data_path: str, label_map: Dict[str, int], fs: in
             model_path = os.path.join(os.getcwd(),"Results", f"{model}.joblib")
 
             # get predictions
-            acc, predictions = _test_production_model(model_path, features_df, true_labels, w_size_sec, fs)
+            predictions = _test_production_model(model_path, features_df, true_labels, w_size_sec, fs)
+
+            # calculate metrics
+            acc = round(accuracy_score(labels, predictions) * 100, 2)
+            precision = precision_score(labels, predictions, average='weighted')
+            recall = recall_score(labels, predictions, average='weighted')
+            f1 = f1_score(labels, predictions, average='weighted')
 
             # append results to the lists
             acc_list.append(acc)
             predictions_list.append(predictions)
 
+            results_list.append({'Subject': subject, f"{model}_acc": acc, f"{model}_precision": precision,
+                            f"{model}_recall": recall, f"{model}_f1": f1})
+
         # generate the plots with the models predictions for each subject
         _plot_all_predictions(true_labels, predictions_list, acc_list, models_list, subject)
+
+    # create DataFrame with results
+    results_df = pd.DataFrame(results_list)
+
+    # store the DataFrame
+    results_df.to_csv(os.path.join(os.getcwd(),"Results", "metrics_results.csv"))
 
 
 # ------------------------------------------------------------------------------------------------------------------- #
 # private functions
 # ------------------------------------------------------------------------------------------------------------------- #
 
-def _test_production_model(model_path: str, features: pd.DataFrame, labels: np.ndarray, w_size_sec, fs) -> Tuple[float, List[int]]:
+def _test_production_model(model_path: str, features: pd.DataFrame, labels: np.ndarray, w_size_sec, fs) -> List[int]:
 
     # load the model
     model, feature_names = load_production_model(model_path)
@@ -120,10 +138,7 @@ def _test_production_model(model_path: str, features: pd.DataFrame, labels: np.n
     # expand the predictions to the size of the original signal
     y_pred_expanded = _expand_classification(y_pred, w_size=w_size_sec, fs=fs)
 
-    # calculate accuracy
-    accuracy = round(accuracy_score(labels, y_pred_expanded)*100, 2)
-
-    return accuracy, y_pred_expanded
+    return y_pred_expanded
 
 
 def _expand_classification(clf_result: np.ndarray, w_size: float, fs: int) -> List[int]:
