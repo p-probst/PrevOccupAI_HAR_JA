@@ -7,7 +7,7 @@ import os
 from constants import VALID_SENSORS, SEGMENTED_DATA_FOLDER, EXTRACTED_FEATURES_FOLDER, RANDOM_SEED
 from raw_data_processor import generate_segmented_dataset
 from feature_extractor import extract_features
-from HAR import perform_model_configuration
+from HAR import perform_model_configuration, test_production_models
 import numpy as np
 
 
@@ -17,8 +17,8 @@ import numpy as np
 GENERATE_SEGMENTED_DATASET = False
 EXTRACT_FEATURES = False
 ML_HAR = True
-ML_MODEL_TUNING = True
-# ML_TRAIN_PRODUCTION_MODEL = True
+ML_MODEL_TUNING = False
+ML_TEST_PRODUCTION_MODELS = True
 
 # definition of folder_path
 RAW_DATA_FOLDER_PATH = 'G:\\Backup PrevOccupAI data\\Prevoccupai_HAR\\subject_data\\raw_signals_backups\\acquisitions'
@@ -67,8 +67,10 @@ if __name__ == '__main__':
             print("Evaluating different models (Random Forest vs. KNN vs. SVM)")
             perform_model_configuration(feature_data_path, balancing_type=balancing_type, window_size_samples=500)
 
-        # train production model using the number of features and the normalization type found through model selection
-        # if ML_TRAIN_PRODUCTION_MODEL:
-        #
-        #     print("\ntraining and evaluating production model")
-        #     train_production_model(feature_data_path, num_features_retain=30, balancing_type=balancing_type, norm_type='none', window_size_samples=500)
+        #train production model using the number of features and the normalization type found through model selection
+        if ML_TEST_PRODUCTION_MODELS:
+            raw_data_path = "G:\\Backup PrevOccupAI data\\Prevoccupai_HAR\\work_simulation\\raw_data"
+            label_map = {'sitting': 0, 'standing': 1, 'walking': 2}
+
+            print("\ntesting the production models")
+            test_production_models(raw_data_path, label_map, fs=100, w_size_sec=0.5, load_sensors=VALID_SENSORS)

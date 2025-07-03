@@ -28,7 +28,7 @@ KNN = "KNN"
 # ------------------------------------------------------------------------------------------------------------------- #
 
 
-def test_production_models(raw_data_path: str, fs: int, label_map: Dict[str, int], w_size_sec: float, load_sensors: Optional[List[str]] = None):
+def test_production_models(raw_data_path: str, label_map: Dict[str, int], fs: int, w_size_sec: float, load_sensors: Optional[List[str]] = None):
 
     # list all folders within the raw_data_path
     subject_folders = os.listdir(raw_data_path)
@@ -89,7 +89,7 @@ def test_production_models(raw_data_path: str, fs: int, label_map: Dict[str, int
         for model in models_list:
 
             # generate the model paths
-            model_path = os.path.join(os.getcwd(), f"{model}.joblib")
+            model_path = os.path.join(os.getcwd(),"Results", f"{model}.joblib")
 
             # get predictions
             acc, predictions = _test_production_model(model_path, features_df, true_labels, w_size_sec, fs)
