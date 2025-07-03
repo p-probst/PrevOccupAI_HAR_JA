@@ -27,7 +27,7 @@ _save_subject_features(...): Saves the features extracted for a subject.
 import os
 import numpy as np
 import pandas as pd
-from typing import List, Dict, Any
+from typing import List, Dict, Any, Tuple
 from tqdm import tqdm
 import json
 import tsfel
@@ -40,7 +40,7 @@ from constants import VALID_ACTIVITIES, \
     SENSOR_COLS_JSON, LOADED_SENSORS_KEY, CLASS_INSTANCES_JSON, MAIN_LABEL_KEY, SUB_LABEL_KEY,\
     ACTIVITY_MAIN_SUB_CLASS, MAIN_CLASS_KEY
 from raw_data_processor import slerp_smoothing, pre_process_inertial_data
-from .window import get_sliding_windows_indices, window_data, window_scaling, validate_scaler_input
+from .window import get_sliding_windows_indices, window_data, window_scaling, validate_scaler_input, trim_data
 from .quaternion_features import geodesic_distance
 from file_utils import remove_file_duplicates, create_dir, load_json_file
 
@@ -231,6 +231,30 @@ def extract_features(data_path: str, features_data_path: str, activities: List[s
         json.dump(json_dict, json_file)
 
 
+def window_and_extract_features(data: np.ndarray, sensor_names: List[str], features_dict: Dict[Any, Any],
+                                w_size_sec: float, fs: int, overlap: float = 0.0) -> pd.DataFrame:
+    """
+    # TODO UPDATE THIS AND DOCUMENTATION AT THE TOP
+    :param data:
+    :param sensor_names:
+    :param features_dict:
+    :param w_size_sec:
+    :param fs:
+    :param overlap:
+    :return:
+    """
+
+    # window the data
+    # (since all are of the same length it is possible to use just one sensor channel)
+    indices = get_sliding_windows_indices(data[:, 0], fs=fs, window_size=w_size_sec, overlap=overlap)
+    windowed_data = window_data(data, indices)
+
+    # extract features
+    features_df = _extract_features(windowed_data, sensor_names, features_dict, fs=fs)
+
+    return features_df
+
+
 def load_data(full_file_path: str) -> np.array:
     """
     loads the data located at full_file_path.
@@ -313,6 +337,42 @@ def extract_quaternion_features(quat_windowed_data) -> pd.DataFrame:
 
     # create pandas.DataFrame
     return pd.DataFrame(quat_features, columns=["quat_mean_dist", "quat_std_dist", "quat_total_dist"])
+
+
+def pre_process_signals(subject_data: pd.DataFrame, sensor_names: List[str], w_size: float,
+                         fs: int) -> Tuple[np.ndarray, np.ndarray]:
+    """
+    Pre-processes the sensors contained in data_array according to their sensor type. Removes samples from the
+    impulse response of the filters and trims the data and label vector to accommodate full windowing of the data.
+
+    :param subject_data: pandas.DataFrame containing the sensor data
+    :param sensor_names: list of strings correspondent to the sensor names
+    :param w_size: window size in seconds
+    :param fs: the sampling frequency
+    :return: the processed sensor data and label vector
+    """
+
+    # convert data to numpy array
+    sensor_data = subject_data.values[:,1:-1]
+
+    # get the label vector
+    labels = subject_data.values[:, -1]
+
+    # pre-process the data
+    sensor_data = _pre_process_sensors(sensor_data, sensor_names)
+
+    # remove impulse response
+    sensor_data = sensor_data[250:,:]
+    labels = labels[250:]
+
+    # trim the data to accommodate full windowing
+    sensor_data, to_trim = trim_data(sensor_data, w_size=w_size, fs=fs)
+    labels = labels[:-to_trim]
+
+    return sensor_data, labels
+
+
+
 
 
 # ------------------------------------------------------------------------------------------------------------------- #

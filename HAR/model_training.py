@@ -5,16 +5,14 @@ import os
 import numpy as np
 import pandas as pd
 import joblib
-import matplotlib.pyplot as plt
 from sklearn.preprocessing import LabelEncoder
 from sklearn.ensemble import RandomForestClassifier
-from sklearn.metrics import accuracy_score, ConfusionMatrixDisplay, confusion_matrix
+from sklearn.metrics import accuracy_score, ConfusionMatrixDisplay
 from sklearn.svm import SVC
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import StandardScaler
 from sklearn.model_selection import GroupShuffleSplit, GridSearchCV, GroupKFold
-from sklearn.base import ClassifierMixin, BaseEstimator
 from typing import Dict, Any, List, Union
 
 # internal imports
@@ -112,8 +110,7 @@ def perform_model_configuration(data_path: str, balancing_type: str, window_size
         print(f'Algorithm: {model_name}')
 
         # hyperparameter tuning per model
-        _hyperparameter_tuning(model_name, param_dict, subject_ids_train, X_train, y_train, X_test, y_test,
-                               window_size_samples=window_size_samples)
+        _hyperparameter_tuning(model_name, param_dict, subject_ids_train, X_train, y_train, X_test, y_test)
 
 
 # ------------------------------------------------------------------------------------------------------------------- #
@@ -121,8 +118,7 @@ def perform_model_configuration(data_path: str, balancing_type: str, window_size
 # ------------------------------------------------------------------------------------------------------------------- #
 def _hyperparameter_tuning(model_name: str, param_dict:  Union[List[Dict[str, Any]], Dict[str, Any]],
                            subject_ids_train: pd.Series, X_train_all: pd.DataFrame, y_train: pd.Series,
-                           X_test_all: pd.DataFrame, y_test: pd.Series,
-                           window_size_samples: int, cv_splits: int = 5) -> None:
+                           X_test_all: pd.DataFrame, y_test: pd.Series, cv_splits: int = 5) -> None:
 
     # TODO: update
     """
@@ -204,6 +200,12 @@ def _hyperparameter_tuning(model_name: str, param_dict:  Union[List[Dict[str, An
 
             # save the best model over all feature sets
             joblib.dump(best_model, os.path.join(folder_path, f"{model_name}.joblib"))
+
+            # save confusion matrix
+            disp = ConfusionMatrixDisplay.from_estimator(best_model, X_test, y_test)
+            disp.plot()
+            disp.ax_.set_title(f"Confusion Matrix | Test set | Accuracy: {test_acc * 100: .2f} %")
+            disp.figure_.savefig(os.path.join(folder_path, f"ConfusionMatrix_{model_name}.png"))
 
             # update the accuracy
             best_acc = test_acc
