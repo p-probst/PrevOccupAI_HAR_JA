@@ -1,8 +1,0 @@
-,num_features,train_acc,test_acc,best_param
-0,5,0.9043321299638989,0.8903429602888087,"{'SVM__C': np.float64(100.0), 'SVM__gamma': np.float64(0.1), 'SVM__kernel': 'rbf'}"
-1,10,0.9020758122743683,0.881768953068592,"{'SVM__C': np.float64(100.0), 'SVM__gamma': np.float64(0.01), 'SVM__kernel': 'rbf'}"
-2,15,0.9196750902527075,0.8876353790613718,"{'SVM__C': np.float64(10.0), 'SVM__gamma': np.float64(0.1), 'SVM__kernel': 'rbf'}"
-3,20,0.911326714801444,0.8998194945848376,"{'SVM__C': np.float64(1000.0), 'SVM__gamma': np.float64(0.001), 'SVM__kernel': 'rbf'}"
-4,25,0.9266696750902527,0.8966606498194946,"{'SVM__C': np.float64(1000.0), 'SVM__gamma': np.float64(0.001), 'SVM__kernel': 'rbf'}"
-5,30,0.9255415162454874,0.8777075812274369,"{'SVM__C': np.float64(100.0), 'SVM__kernel': 'linear'}"
-6,35,0.9325361010830325,0.878158844765343,"{'SVM__C': np.float64(1000.0), 'SVM__kernel': 'linear'}"

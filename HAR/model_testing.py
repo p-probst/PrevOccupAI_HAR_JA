@@ -6,7 +6,7 @@ import pandas as pd
 import numpy as np
 import tsfel
 import matplotlib.pyplot as plt
-from typing import Optional, List, Dict, Tuple
+from typing import Optional, List, Dict
 from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score
 
 # internal imports
@@ -42,6 +42,9 @@ def test_production_models(raw_data_path: str, label_map: Dict[str, int], fs: in
     for subject in subject_folders:
         print("\n#----------------------------------------------------------------------#")
         print(f"# Processing data for Subject {subject}")
+
+        # innit dictionary to store the results of each subject
+        results_dict = {'Subject': subject}
 
         # get the path to the subject folder
         subject_folder_path = os.path.join(raw_data_path, subject)
@@ -83,8 +86,17 @@ def test_production_models(raw_data_path: str, label_map: Dict[str, int], fs: in
         # get a list with the models to be tested
         models_list = [KNN, SVM, RF]
 
-        # list for holding the accuracies of the models
+        # list for holding the accuracies
         acc_list = []
+
+        # list for holding the precisions
+        precisions_list = []
+
+        # list for holding the recalls of the models
+        recalls_list = []
+
+        # list for holding the f1 scores of the models
+        f1_list = []
 
         # list for holding the predictions
         predictions_list = []
@@ -105,10 +117,19 @@ def test_production_models(raw_data_path: str, label_map: Dict[str, int], fs: in
 
             # append results to the lists
             acc_list.append(acc)
+            precisions_list.append(precision)
+            recalls_list.append(recall)
+            f1_list.append(f1)
             predictions_list.append(predictions)
 
-            results_list.append({'Subject': subject, f"{model}_acc": acc, f"{model}_precision": precision,
-                            f"{model}_recall": recall, f"{model}_f1": f1})
+        for n in range(len(models_list)-1):
+
+            # add model and metrics to the results dict
+            results_dict.update({f"acc_{models_list[n]}": acc_list[n], f"precision_{models_list[n]}": precisions_list[n],
+                                 f"recall_{models_list[n]}": recalls_list[n], f"f1_score_{models_list[n]}": f1_list[n]})
+
+        # append the results dictionary to the list with the results of all subjects
+        results_list.append(results_dict)
 
         # generate the plots with the models predictions for each subject
         _plot_all_predictions(true_labels, predictions_list, acc_list, models_list, subject)
@@ -136,17 +157,17 @@ def _test_production_model(model_path: str, features: pd.DataFrame, w_size_sec, 
     y_pred = model.predict(features)
 
     # expand the predictions to the size of the original signal
-    y_pred_expanded = _expand_classification(y_pred, w_size=w_size_sec, fs=fs)
+    y_pred_expanded = _expand_classification(y_pred, w_size_sec=w_size_sec, fs=fs)
 
     return y_pred_expanded
 
 
-def _expand_classification(clf_result: np.ndarray, w_size: float, fs: int) -> List[int]:
+def _expand_classification(clf_result: np.ndarray, w_size_sec: float, fs: int) -> List[int]:
     """
     Converts the time column from the android timestamp which is in nanoseconds to seconds.
     Parameters.
     :param clf_result: list with the classifier prediction where each entry is the prediction made for a window.
-    :param w_size: the window size in samples that was used to make the classification.
+    :param w_size: the window size in seconds that was used to make the classification.
     :param fs: the sampling frequency of the signal that was classified.
     :return: the expanded classification results.
     """
@@ -155,7 +176,7 @@ def _expand_classification(clf_result: np.ndarray, w_size: float, fs: int) -> Li
 
     # cycle over the classification results list
     for i, p in enumerate(clf_result):
-        expanded_clf_result += [p] * int(w_size * fs)
+        expanded_clf_result += [p] * int(w_size_sec * fs)
 
     return expanded_clf_result
 
