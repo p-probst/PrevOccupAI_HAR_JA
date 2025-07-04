@@ -61,14 +61,15 @@ if __name__ == '__main__':
         # path to folder containing the feature files for the different normalization types
         feature_data_path = os.path.join(OUTPUT_FOLDER_PATH, EXTRACTED_FEATURES_FOLDER)
 
-        # perform model selection
+        # Obtain th best KNN, SVN, and RF models and train for production
         if ML_MODEL_TUNING:
 
             print("Evaluating different models (Random Forest vs. KNN vs. SVM)")
             perform_model_configuration(feature_data_path, balancing_type=balancing_type, window_size_samples=500)
 
-        #train production model using the number of features and the normalization type found through model selection
+        # Test the production models KNN, SVM, RF on the real world dataset
         if ML_TEST_PRODUCTION_MODELS:
+
             raw_data_path = "G:\\Backup PrevOccupAI data\\Prevoccupai_HAR\\work_simulation\\raw_data"
             label_map = {'sitting': 0, 'standing': 1, 'walking': 2}
 

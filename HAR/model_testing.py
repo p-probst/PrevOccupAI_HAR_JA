@@ -1,3 +1,18 @@
+"""
+Functions for testing the production models on the real-world dataset.
+
+Available Functions
+-------------------
+[Public]
+test_production_models(...): Tests the production models (KNN, SVM, RF) on the real-world data
+-------------------
+[Private]
+_test_production_model(...): Loads the production model obtains the predictions.
+_expand_classification(...): Expands the predictions to the size of the original signal.
+_plot_all_predictions(...): Generates and saves a figure with the true labels and predictions over time.
+-------------------
+"""
+
 # ------------------------------------------------------------------------------------------------------------------- #
 # imports
 # ------------------------------------------------------------------------------------------------------------------- #
@@ -22,14 +37,30 @@ from file_utils import create_dir
 RF = "Random Forest"
 SVM = "SVM"
 KNN = "KNN"
-# TODO ADD DOCUMENTATION ALL OVER
+
 # ------------------------------------------------------------------------------------------------------------------- #
 # public functions
 # ------------------------------------------------------------------------------------------------------------------- #
 
 
-def test_production_models(raw_data_path: str, label_map: Dict[str, int], fs: int, w_size_sec: float, load_sensors: Optional[List[str]] = None):
+def test_production_models(raw_data_path: str, label_map: Dict[str, int], fs: int, w_size_sec: float,
+                           load_sensors: Optional[List[str]] = None) -> None:
+    """
+    Tests the production models ("KNN", "SVM", "RF") on real-world data.
 
+    This function loads the real-world dataset and corresponding labels, pre-processes the data, and extracts
+    the features used during model training. It then uses the production models to predict the activities,
+    saves the evaluation metrics to a CSV file, and generates a plot showing the predictions over time.
+
+    :param raw_data_path: path to the folder containing the subject folders (i.e. "...\raw_data_path\P001\signals.txt")
+    :param label_map: A dictionary mapping activity strings to numeric labels.
+                        e.g., {"sitting": 1, "standing": 2, "walking": 3}.
+    :param fs: the sampling frequency
+    :param w_size_sec: the window size in seconds
+    :param load_sensors: list of sensors (as strings) indicating which sensors should be loaded.
+                        Default: None (all sensors are loaded)
+    :return: None
+    """
     # list for holding the metrics for all subjects
     results_list = []
 
@@ -37,7 +68,7 @@ def test_production_models(raw_data_path: str, label_map: Dict[str, int], fs: in
     subject_folders = os.listdir(raw_data_path)
 
     # get the folders that contain the subject data. Subject data folders start with 'S' (e.g., S001)
-    subject_folders = [folder for folder in subject_folders if folder.startswith('S')]
+    subject_folders = [folder for folder in subject_folders if folder.startswith('P')]
 
     for subject in subject_folders:
         print("\n#----------------------------------------------------------------------#")
@@ -122,7 +153,7 @@ def test_production_models(raw_data_path: str, label_map: Dict[str, int], fs: in
             f1_list.append(f1)
             predictions_list.append(predictions)
 
-        for n in range(len(models_list)-1):
+        for n in range(len(models_list)):
 
             # add model and metrics to the results dict
             results_dict.update({f"acc_{models_list[n]}": acc_list[n], f"precision_{models_list[n]}": precisions_list[n],
@@ -145,7 +176,15 @@ def test_production_models(raw_data_path: str, label_map: Dict[str, int], fs: in
 # private functions
 # ------------------------------------------------------------------------------------------------------------------- #
 
-def _test_production_model(model_path: str, features: pd.DataFrame, w_size_sec, fs) -> List[int]:
+def _test_production_model(model_path: str, features: pd.DataFrame, w_size_sec: float, fs: int) -> List[int]:
+    """
+    Loads the production model obtains the predictions.
+    :param model_path: path to the model
+    :param features: pandas DataFrame containing the features
+    :param w_size_sec: the window size in seconds
+    :param fs: the sampling frequency
+    :return: a list containing the predictions
+    """
 
     # load the model
     model, feature_names = load_production_model(model_path)
@@ -167,7 +206,7 @@ def _expand_classification(clf_result: np.ndarray, w_size_sec: float, fs: int) -
     Converts the time column from the android timestamp which is in nanoseconds to seconds.
     Parameters.
     :param clf_result: list with the classifier prediction where each entry is the prediction made for a window.
-    :param w_size: the window size in seconds that was used to make the classification.
+    :param w_size_sec: the window size in seconds that was used to make the classification.
     :param fs: the sampling frequency of the signal that was classified.
     :return: the expanded classification results.
     """
@@ -184,17 +223,17 @@ def _expand_classification(clf_result: np.ndarray, w_size_sec: float, fs: int) -
 def _plot_all_predictions(labels: np.ndarray, expanded_predictions: List[List[int]], accuracies: List[float],
                           model_names: List[str], subject_id: str) -> None:
     """
-    Generates and saves a figure with 6 plots. The first plot corresponds to true labels over time, and the other five plots
-    correspond to the vanilla models and post-processing results over time.
+    Generates and saves a figure with len(model_names) + 1 plots. The first plot corresponds to true labels over time,
+    and the remaining plots correspond to the predictions of the models over time.
+
     :param labels: numpy.array containing the true labels
     :param expanded_predictions: List os numpy.arrays containing the predictions expanded to the size of the true label vector
-    :param accuracies: List containing the accuracies of the vanilla model and the 4 post-processing schemes.
+    :param accuracies: List containing the accuracies of the models.
     :param model_names: list of strings pertaining to the name of the models used
-    :param w_size: window size in seconds
     :param subject_id: str with the subject identifier
     :return: None
     """
-    # TODO IMPROVE THIS DOCSTRING, EXPLAIN THAT THE ORDER IN THE LISTS HAS TO BE THE SAME
+
     n_preds = len(expanded_predictions)
     fig, axes = plt.subplots(nrows=n_preds + 1, ncols=1, sharex=True, sharey=True, figsize=(30, 3 * (n_preds + 1)))
     fig.suptitle(f"True labels vs Predicted labels", fontsize=24)

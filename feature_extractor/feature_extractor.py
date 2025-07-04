@@ -9,6 +9,7 @@ load_data(...): loads the data located at full_file_path.
 extract_tsfel_features(...): Extracts features from the data windows contained in windowed_data using TSFEL.
 extract_quaternion_features(...): Extracts quaterion-based features from the rotation vector sensor.
 load_json_file(...): Loads a json file.
+window_and_extract_features(...): windows the sensor data and extracts the features.
 ------------------
 [Private]
 _validate_activity_input(...): Checks whether the provided activities are valid.
@@ -234,14 +235,16 @@ def extract_features(data_path: str, features_data_path: str, activities: List[s
 def window_and_extract_features(data: np.ndarray, sensor_names: List[str], features_dict: Dict[Any, Any],
                                 w_size_sec: float, fs: int, overlap: float = 0.0) -> pd.DataFrame:
     """
-    # TODO UPDATE THIS AND DOCUMENTATION AT THE TOP
-    :param data:
-    :param sensor_names:
-    :param features_dict:
-    :param w_size_sec:
-    :param fs:
-    :param overlap:
-    :return:
+    This function windows the data given the window size in seconds and overlap provided, then extracts features using
+    TSFEL and also extracts quaternion-based features.
+
+    :param data: np.ndarray containing the data
+    :param sensor_names: list of strings pertaining to the sensor names
+    :param features_dict: Dictionary with the features to be extracted using TSFEL
+    :param w_size_sec: window size in seconds
+    :param fs: the sampling frequency
+    :param overlap: the overlap of the windows form 0 to 1 (default = 0.0)
+    :return: a pandas DataFrame containing the extracted features
     """
 
     # window the data

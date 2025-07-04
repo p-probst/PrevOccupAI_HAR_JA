@@ -1,3 +1,16 @@
+"""
+Functions for training the production models
+
+Available Functions
+-------------------
+[Public]
+perform_model_configuration(...): Performs feature selection and grid search to obtain the best configuration for a KNN, SVM, and RF
+-------------------
+[Private]
+_hyperparameter_tuning(...): Obtains the best feature set and parameters for a model and saves it, along with the confusion matrix
+-------------------
+"""
+
 # ------------------------------------------------------------------------------------------------------------------- #
 # imports
 # ------------------------------------------------------------------------------------------------------------------- #
@@ -40,8 +53,9 @@ ESTIMATOR = 'estimator'
 
 def perform_model_configuration(data_path: str, balancing_type: str, window_size_samples: int) -> None:
     """
-    Evaluates 3 different models (Random Forest, KNN, and SVM)  using a nested cross-validation to select which of
-    these models is used for production. The model selection is only performed on the training data.
+    Performs feature selection and grid search for 3 models (KNN, SVM, RF) and saves the best model, along with the
+    metrics and confusion matrices.
+
     :param data_path: the path to the data. This should point to the folder containing the extracted features.
     :param balancing_type: the data balancing type. Can be either:
                          'main_classes': for balancing the data in such a way that each main class has the (almost) the
@@ -119,20 +133,19 @@ def perform_model_configuration(data_path: str, balancing_type: str, window_size
 def _hyperparameter_tuning(model_name: str, param_dict:  Union[List[Dict[str, Any]], Dict[str, Any]],
                            subject_ids_train: pd.Series, X_train_all: pd.DataFrame, y_train: pd.Series,
                            X_test_all: pd.DataFrame, y_test: pd.Series, cv_splits: int = 5) -> None:
-
-    # TODO: update
     """
-    Evaluates multiple machine learning models using nested cross-validation.
+    Receives a model and performs feature selection (select k best) and hyperparameter tuning (grid search) to obtain the best model.
+    Saves the train accuracy, test accuracy, and the best parameters, for each number of best features tested
+    (5, 10, 15, 20, 25, 30, and 35).
 
-    This function initializes and evaluates different models (SVM, KNN, and Random Forest)
-    based on the specified normalization type. It applies nested cross-validation to assess
-    model performance and saves the results.
-
-    :param estimator:
-    :param param_grid:
-    :param X_train: pandas.DataFrame containing the training data
-    :param y_train: pandas.Series containing the labels
-    :param window_size_samples: the number of samples per window. Used for creating folder and file names.
+    :param model_name: Name of the model ("KNN", "SVM", "RF")
+    :param param_dict: Dictionary with the parameters to be tested in the grid search
+    :param subject_ids_train: pandas.Series containing the subject IDs
+    :param X_train_all: pandas.DataFrame containing the training data
+    :param y_train: pandas.DataFrame containing the training labels
+    :param X_test_all: pandas.DataFrame containing the testing data
+    :param y_test: pandas.DataFrame containing the testing labels
+    :param cv_splits: the number of cross-validation splits for the gridsearch.
     :return: None
     """
     # get the path to the current project
