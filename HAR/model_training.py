@@ -20,12 +20,12 @@ import pandas as pd
 import joblib
 from sklearn.preprocessing import LabelEncoder
 from sklearn.ensemble import RandomForestClassifier
-from sklearn.metrics import accuracy_score, ConfusionMatrixDisplay
+from sklearn.metrics import accuracy_score, ConfusionMatrixDisplay, precision_score, recall_score, f1_score
 from sklearn.svm import SVC
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import StandardScaler
-from sklearn.model_selection import GroupShuffleSplit, GridSearchCV, GroupKFold
+from sklearn.model_selection import GridSearchCV, GroupKFold, GroupShuffleSplit
 from typing import Dict, Any, List, Union
 
 # internal imports
@@ -189,11 +189,17 @@ def _hyperparameter_tuning(model_name: str, param_dict:  Union[List[Dict[str, An
         best_parameters = grid_search.best_params_
 
         # evaluate estimator
-        # (1) train accuracy
+        # (1) train metrics
         train_acc = accuracy_score(y_true=y_train, y_pred=best_model.predict(X_train))
+        train_prec = precision_score(y_true=y_train, y_pred=best_model.predict(X_train), average='weighted')
+        train_recall = recall_score(y_true=y_train, y_pred=best_model.predict(X_train), average='weighted' )
+        train_f1 = f1_score(y_true=y_train, y_pred=best_model.predict(X_train), average='weighted')
 
         # (2) test accuracy
         test_acc = accuracy_score(y_true=y_test, y_pred=best_model.predict(X_test))
+        test_prec = precision_score(y_true=y_test, y_pred=best_model.predict(X_test), average='weighted')
+        test_recall = recall_score(y_true=y_test, y_pred=best_model.predict(X_test), average='weighted')
+        test_f1 = f1_score(y_true=y_test, y_pred=best_model.predict(X_test), average='weighted')
 
         # print the results
         print("\nResults of hyperparameter tuning")
@@ -205,7 +211,9 @@ def _hyperparameter_tuning(model_name: str, param_dict:  Union[List[Dict[str, An
         print(f"test accuracy: {test_acc * 100: .2f}")
 
         # store the results
-        results_list.append({"num_features": num_features_retain, "train_acc": train_acc, "test_acc": test_acc,
+        results_list.append({"num_features": num_features_retain, "train_acc": train_acc, "train_prec": train_prec,
+                             "train_recall": train_recall, "train_f1": train_f1, "test_acc": test_acc, "test_prec": test_prec,
+                             "test_recall": test_recall, "test_f1": test_f1,
                              "best_param": str(best_parameters)})
 
         # store the best model

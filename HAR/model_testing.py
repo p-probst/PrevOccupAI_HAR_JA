@@ -153,11 +153,15 @@ def test_production_models(raw_data_path: str, label_map: Dict[str, int], fs: in
             f1_list.append(f1)
             predictions_list.append(predictions)
 
-        for n in range(len(models_list)):
+        # for n in range(len(models_list)):
+
+        n=0
+        while n < len(models_list):
 
             # add model and metrics to the results dict
             results_dict.update({f"acc_{models_list[n]}": acc_list[n], f"precision_{models_list[n]}": precisions_list[n],
                                  f"recall_{models_list[n]}": recalls_list[n], f"f1_score_{models_list[n]}": f1_list[n]})
+            n+=1
 
         # append the results dictionary to the list with the results of all subjects
         results_list.append(results_dict)
