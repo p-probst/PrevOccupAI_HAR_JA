@@ -225,8 +225,8 @@ def _hyperparameter_tuning(model_name: str, param_dict:  Union[List[Dict[str, An
             # save confusion matrix
             disp = ConfusionMatrixDisplay.from_estimator(best_model, X_test, y_test)
             disp.plot()
-            disp.ax_.set_title(f"Confusion Matrix | Test set | Accuracy: {test_acc * 100: .2f} %")
-            disp.figure_.savefig(os.path.join(folder_path, f"ConfusionMatrix_{model_name}.png"))
+            disp.ax_.set_title(f"{model_name} | Test accuracy: {test_acc * 100: .2f} %")
+            disp.figure_.savefig(os.path.join(folder_path, f"ConfusionMatrix_{model_name}.svg"))
 
             # update the accuracy
             best_acc = test_acc

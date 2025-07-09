@@ -4,10 +4,8 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="05428d1d-ca52-4ab9-9473-3478bc5e9e70" name="Changes" comment="added missing documentation">
+    <list default="true" id="05428d1d-ca52-4ab9-9473-3478bc5e9e70" name="Changes" comment="added precision, recall, and f1-score to the model training results reports">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/HAR/model_testing.py" beforeDir="false" afterPath="$PROJECT_DIR$/HAR/model_testing.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/HAR/model_training.py" beforeDir="false" afterPath="$PROJECT_DIR$/HAR/model_training.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -107,7 +105,15 @@
       <option name="project" value="LOCAL" />
       <updated>1751637791603</updated>
     </task>
-    <option name="localTasksCounter" value="5" />
+    <task id="LOCAL-00005" summary="added precision, recall, and f1-score to the model training results reports">
+      <option name="closed" value="true" />
+      <created>1751983969020</created>
+      <option name="number" value="00005" />
+      <option name="presentableId" value="LOCAL-00005" />
+      <option name="project" value="LOCAL" />
+      <updated>1751983969020</updated>
+    </task>
+    <option name="localTasksCounter" value="6" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -126,6 +132,7 @@
     <MESSAGE value="added the saving of acc, precision, recall, and f1-score" />
     <MESSAGE value="bug fixes with the generation of metrics.csv" />
     <MESSAGE value="added missing documentation" />
-    <option name="LAST_COMMIT_MESSAGE" value="added missing documentation" />
+    <MESSAGE value="added precision, recall, and f1-score to the model training results reports" />
+    <option name="LAST_COMMIT_MESSAGE" value="added precision, recall, and f1-score to the model training results reports" />
   </component>
 </project>
