@@ -27,6 +27,7 @@ from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import StandardScaler
 from sklearn.model_selection import GridSearchCV, GroupKFold, GroupShuffleSplit
 from typing import Dict, Any, List, Union
+import matplotlib.pyplot as plt
 
 # internal imports
 from .load import load_features
@@ -176,6 +177,27 @@ def _hyperparameter_tuning(model_name: str, param_dict:  Union[List[Dict[str, An
         X_train, X_test = select_k_best_features(X_train, y_train, X_test, k=num_features_retain)
 
         print(f"Used features: {X_train.columns.values}")
+
+        if num_features_retain == 25:
+
+            # Generate distribution plots for the 25 selected features
+            fig, axes = plt.subplots(nrows=5, ncols=5, figsize=(20, 15))
+            axes = axes.flatten()
+
+            for idx, col in enumerate(X_train.columns[:25]):
+                ax = axes[idx]
+                ax.hist(X_train[col], bins=30, color='skyblue', edgecolor='black')
+                ax.set_title(col, fontsize=10)
+                ax.tick_params(axis='x', rotation=45)
+
+            # Remove any unused subplots (in case < 25 features by accident)
+            for j in range(len(X_train.columns), 25):
+                fig.delaxes(axes[j])
+
+            plt.tight_layout()
+            dist_plot_path = os.path.join(folder_path, f"feature_distributions_25.svg")
+            plt.savefig(dist_plot_path)
+            plt.close()
 
         # Perform Grid Search
         cv = GroupKFold(n_splits=cv_splits, shuffle=True, random_state=RANDOM_SEED)
