@@ -28,11 +28,12 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.model_selection import GridSearchCV, GroupKFold, GroupShuffleSplit
 from typing import Dict, Any, List, Union
 import matplotlib.pyplot as plt
+from pathlib import Path
 
 # internal imports
 from .load import load_features
 from .feature_selection import remove_low_variance, remove_highly_correlated_features, select_k_best_features
-from constants import RANDOM_SEED
+from constants import RANDOM_SEED, MODEL_DEVELOPMENT_FOLDER
 from file_utils import create_dir
 
 # ------------------------------------------------------------------------------------------------------------------- #
@@ -52,12 +53,13 @@ ESTIMATOR = 'estimator'
 # ------------------------------------------------------------------------------------------------------------------- #
 
 
-def perform_model_configuration(data_path: str, balancing_type: str, window_size_samples: int) -> None:
+def perform_model_configuration(data_path: str | Path, results_path: str | Path, balancing_type: str, window_size_samples: int) -> None:
     """
     Performs feature selection and grid search for 3 models (KNN, SVM, RF) and saves the best model, along with the
     metrics and confusion matrices.
 
     :param data_path: the path to the data. This should point to the folder containing the extracted features.
+    :param results_path: the path to the folder where the results should be saved.
     :param balancing_type: the data balancing type. Can be either:
                          'main_classes': for balancing the data in such a way that each main class has the (almost) the
                                        same amount of data. This ensures that each sub-class within the main class has
@@ -98,7 +100,6 @@ def perform_model_configuration(data_path: str, balancing_type: str, window_size
 
     print(f"Total number of instances for training: {X_train.shape[0]}")
 
-    # TODO: we only consider main_classes balancing, no need to handle it here.
     # get y depending on the balancing type
     if balancing_type == 'main_classes':
         y_train = y_main.iloc[train_idx]
@@ -116,7 +117,7 @@ def perform_model_configuration(data_path: str, balancing_type: str, window_size
     print(f"subjects train: {subject_ids[train_idx].unique()}")
     print(f"subjects test: {subject_ids[test_idx].unique()}")
 
-    # get the subjects for training (and testing)
+    # get the subjects for training
     subject_ids_train = subject_ids.iloc[train_idx]
 
     # cycle over the models
@@ -125,7 +126,7 @@ def perform_model_configuration(data_path: str, balancing_type: str, window_size
         print(f'Algorithm: {model_name}')
 
         # hyperparameter tuning per model
-        _hyperparameter_tuning(model_name, param_dict, subject_ids_train, X_train, y_train, X_test, y_test)
+        _hyperparameter_tuning(model_name, param_dict, subject_ids_train, X_train, y_train, X_test, y_test, results_path)
 
 
 # ------------------------------------------------------------------------------------------------------------------- #
@@ -133,7 +134,7 @@ def perform_model_configuration(data_path: str, balancing_type: str, window_size
 # ------------------------------------------------------------------------------------------------------------------- #
 def _hyperparameter_tuning(model_name: str, param_dict:  Union[List[Dict[str, Any]], Dict[str, Any]],
                            subject_ids_train: pd.Series, X_train_all: pd.DataFrame, y_train: pd.Series,
-                           X_test_all: pd.DataFrame, y_test: pd.Series, cv_splits: int = 5) -> None:
+                           X_test_all: pd.DataFrame, y_test: pd.Series, results_path: str | Path, cv_splits: int = 5) -> None:
     """
     Receives a model and performs feature selection (select k best) and hyperparameter tuning (grid search) to obtain the best model.
     Saves the train accuracy, test accuracy, and the best parameters, for each number of best features tested
@@ -146,14 +147,13 @@ def _hyperparameter_tuning(model_name: str, param_dict:  Union[List[Dict[str, An
     :param y_train: pandas.DataFrame containing the training labels
     :param X_test_all: pandas.DataFrame containing the testing data
     :param y_test: pandas.DataFrame containing the testing labels
+    :param results_path: the path to the folder where the results should be saved.
     :param cv_splits: the number of cross-validation splits for the gridsearch.
     :return: None
     """
-    # get the path to the current project
-    project_path = os.getcwd()
 
     # create results directory (if it doesn't exist)
-    folder_path = create_dir(project_path, "Results")
+    folder_path = create_dir(results_path, MODEL_DEVELOPMENT_FOLDER)
 
     # init best accuracy
     best_acc = 0
@@ -248,7 +248,7 @@ def _hyperparameter_tuning(model_name: str, param_dict:  Union[List[Dict[str, An
             disp = ConfusionMatrixDisplay.from_estimator(best_model, X_test, y_test)
             disp.plot()
             disp.ax_.set_title(f"{model_name} | Test accuracy: {test_acc * 100: .2f} %")
-            disp.figure_.savefig(os.path.join(folder_path, f"ConfusionMatrix_{model_name}.svg"))
+            disp.figure_.savefig(os.path.join(folder_path, f"{model_name}_confusion_matrix.svg"))
 
             # update the accuracy
             best_acc = test_acc

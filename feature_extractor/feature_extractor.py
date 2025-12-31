@@ -55,7 +55,7 @@ TSFEL_CONFIG_FILE = 'cfg_file.json'
 # ------------------------------------------------------------------------------------------------------------------- #
 # public functions
 # ------------------------------------------------------------------------------------------------------------------- #
-def extract_features(data_path: str, features_data_path: str, activities: List[str] = None, fs: int = 100,
+def extract_features(data_path: str, features_data_path: str | Path, activities: List[str] = None, fs: int = 100,
                      window_size: float = 1.5, overlap: float = 0.5, window_scaler: str = None,
                      output_file_type: str = NPY, default_input_file_type: str = NPY) -> None:
     """
@@ -113,7 +113,7 @@ def extract_features(data_path: str, features_data_path: str, activities: List[s
     subject_folders = os.listdir(data_path)
 
     # get the folders that contain the subject data. Subject data folders start with 'P' (e.g., P001)
-    subject_folders = [folder for folder in subject_folders if folder.startswith('P')]
+    subject_folders = sorted([folder for folder in subject_folders if folder.startswith('P')])
 
     # get the features to be extracted TSFEL
     features_dict = load_json_file(os.path.join(Path(__file__).parent, TSFEL_CONFIG_FILE))
@@ -146,8 +146,6 @@ def extract_features(data_path: str, features_data_path: str, activities: List[s
             # get files that belong to the activity
             files = [file for file in files if activity in file]
 
-            # TODO: eventually add check for the file type of the files and add this to the if as a condition
-            #  (i.e., only consider loading files with the correct file types otherwise skip)
             if files:
 
                 # remove duplicate files

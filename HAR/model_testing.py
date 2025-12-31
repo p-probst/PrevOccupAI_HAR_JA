@@ -23,9 +23,10 @@ import tsfel
 import matplotlib.pyplot as plt
 from typing import Optional, List, Dict
 from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score
+from pathlib import Path
 
 # internal imports
-from constants import TXT
+from constants import TXT, MODEL_DEVELOPMENT_FOLDER, MODEL_EVALUATION_FOLDER
 from raw_data_processor import load_data_from_same_recording
 from .load import load_labels_from_log, load_production_model
 from feature_extractor import pre_process_signals, window_and_extract_features
@@ -43,7 +44,7 @@ KNN = "KNN"
 # ------------------------------------------------------------------------------------------------------------------- #
 
 
-def test_production_models(raw_data_path: str, label_map: Dict[str, int], fs: int, w_size_sec: float,
+def test_production_models(raw_data_path: str | Path, results_path: str | Path, label_map: Dict[str, int], fs: int, w_size_sec: float,
                            load_sensors: Optional[List[str]] = None) -> None:
     """
     Tests the production models ("KNN", "SVM", "RF") on real-world data.
@@ -53,6 +54,7 @@ def test_production_models(raw_data_path: str, label_map: Dict[str, int], fs: in
     saves the evaluation metrics to a CSV file, and generates a plot showing the predictions over time.
 
     :param raw_data_path: path to the folder containing the subject folders (i.e. "...\raw_data_path\P001\signals.txt")
+    :param results_path: the path to the folder where the results should be saved.
     :param label_map: A dictionary mapping activity strings to numeric labels.
                         e.g., {"sitting": 1, "standing": 2, "walking": 3}.
     :param fs: the sampling frequency
@@ -61,6 +63,9 @@ def test_production_models(raw_data_path: str, label_map: Dict[str, int], fs: in
                         Default: None (all sensors are loaded)
     :return: None
     """
+    # create directory to store the results (if it doesn't exist)
+    folder_path = create_dir(results_path, MODEL_EVALUATION_FOLDER)
+
     # list for holding the metrics for all subjects
     results_list = []
 
@@ -68,7 +73,7 @@ def test_production_models(raw_data_path: str, label_map: Dict[str, int], fs: in
     subject_folders = os.listdir(raw_data_path)
 
     # get the folders that contain the subject data. Subject data folders start with 'S' (e.g., S001)
-    subject_folders = [folder for folder in subject_folders if folder.startswith('P')]
+    subject_folders = sorted([folder for folder in subject_folders if folder.startswith('P')])
 
     for subject in subject_folders:
         print("\n#----------------------------------------------------------------------#")
@@ -135,7 +140,7 @@ def test_production_models(raw_data_path: str, label_map: Dict[str, int], fs: in
         for model in models_list:
 
             # generate the model paths
-            model_path = os.path.join(os.getcwd(),"Results", f"{model}.joblib")
+            model_path = os.path.join(results_path, MODEL_DEVELOPMENT_FOLDER, f"{model}.joblib")
 
             # get predictions
             predictions = _test_production_model(model_path, features_df, w_size_sec, fs)
@@ -167,13 +172,13 @@ def test_production_models(raw_data_path: str, label_map: Dict[str, int], fs: in
         results_list.append(results_dict)
 
         # generate the plots with the models predictions for each subject
-        _plot_all_predictions(true_labels, predictions_list, acc_list, models_list, subject)
+        _plot_all_predictions(true_labels, predictions_list, acc_list, models_list, subject, folder_path)
 
     # create DataFrame with results
     results_df = pd.DataFrame(results_list)
 
     # store the DataFrame
-    results_df.to_csv(os.path.join(os.getcwd(),"Results", "metrics_results.csv"))
+    results_df.to_csv(os.path.join(folder_path, "evaluation_results.csv"))
 
 
 # ------------------------------------------------------------------------------------------------------------------- #
@@ -225,7 +230,7 @@ def _expand_classification(clf_result: np.ndarray, w_size_sec: float, fs: int) -
 
 
 def _plot_all_predictions(labels: np.ndarray, expanded_predictions: List[List[int]], accuracies: List[float],
-                          model_names: List[str], subject_id: str) -> None:
+                          model_names: List[str], subject_id: str, results_path: str | Path) -> None:
     """
     Generates and saves a figure with len(model_names) + 1 plots. The first plot corresponds to true labels over time,
     and the remaining plots correspond to the predictions of the models over time.
@@ -235,6 +240,7 @@ def _plot_all_predictions(labels: np.ndarray, expanded_predictions: List[List[in
     :param accuracies: List containing the accuracies of the models.
     :param model_names: list of strings pertaining to the name of the models used
     :param subject_id: str with the subject identifier
+    :param results_path: the path to the folder where the results should be saved.
     :return: None
     """
 
@@ -254,14 +260,8 @@ def _plot_all_predictions(labels: np.ndarray, expanded_predictions: List[List[in
     # adjust layout
     plt.tight_layout(rect=(0.0, 0.0, 1.0, 0.97))
 
-    # get the project path
-    project_path = os.getcwd()
-
-    # generate a folder path to store the plots
-    plots_output_path = create_dir(project_path,
-                                   os.path.join("Results", "real_world_test", "plots"))
-
     # save plots
-    plt.savefig(os.path.join(plots_output_path, f"results_fig_{subject_id}.png"))
+    plt.savefig(os.path.join(results_path, f"results_fig_{subject_id}.svg"))
+    plt.close()
 
 

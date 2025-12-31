@@ -21,6 +21,7 @@ import os
 from typing import List, Optional
 import json
 import pandas as pd
+from pathlib import Path
 
 # internal imports
 from constants import VALID_ACTIVITIES, ACTIVITY_MAP, WALK, STAIRS, CABINETS, STAND,\
@@ -35,7 +36,7 @@ from file_utils import create_dir
 # ------------------------------------------------------------------------------------------------------------------- #
 # public functions
 # ------------------------------------------------------------------------------------------------------------------- #
-def generate_segmented_dataset(raw_data_path: str, segmented_data_path: str,
+def generate_segmented_dataset(raw_data_path: str | Path, segmented_data_path: str | Path,
                                load_sensors: Optional[List[str]] = None, fs: int = 100, crop_n_seconds: int = 5,
                                plot_segment_lines: bool = False, plot_cropped_tasks: bool = False,
                                output_file_type: str = NPY) -> None:
@@ -88,7 +89,7 @@ def generate_segmented_dataset(raw_data_path: str, segmented_data_path: str,
     subject_folders = os.listdir(raw_data_path)
 
     # get the folders that contain the subject data. Subject data folders start with 'P' (e.g., P001)
-    subject_folders = [folder for folder in subject_folders if folder.startswith('P')]
+    subject_folders = sorted([folder for folder in subject_folders if folder.startswith('P')])
 
     # cycle over the subjects
     for subject in subject_folders:
@@ -130,7 +131,7 @@ def generate_segmented_dataset(raw_data_path: str, segmented_data_path: str,
             else:
                 segmented_tasks = segment_activities(aligned_data, activity, fs=fs, plot_segments=plot_segment_lines)
 
-            # crop 10 seconds at the beginning and the end of each signal to ensure that
+            # crop n seconds at the beginning and the end of each signal to ensure that
             segmented_tasks = crop_segments(segmented_tasks, n_seconds=crop_n_seconds, fs=fs)
 
             if plot_cropped_tasks:

@@ -96,6 +96,9 @@ VALID_FILE_TYPES = [CSV, NPY]
 # ------------------------------------------------------------------------------------------------------------------- #
 SEGMENTED_DATA_FOLDER = 'segmented_data'
 EXTRACTED_FEATURES_FOLDER = 'extracted_features'
+RESULTS_FOLDER = 'results'
+MODEL_DEVELOPMENT_FOLDER = 'model_development'
+MODEL_EVALUATION_FOLDER = 'model_evaluation'
 
 # ------------------------------------------------------------------------------------------------------------------- #
 # json files and keys
