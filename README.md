@@ -31,7 +31,7 @@ To cite the article please use: (INSERT CITATION ONCE PUBLISHED)
 The two sub-datasets used in this repository can be downloaded at: (INSERT LINK ONCE DATASET AVAILABLE)
 
 For both datasets, data was acquired using a Xiamoi Redmi Note 9 smartphone that was strapped to the subject's chest.
-<center">
+<center>
 <img src="./figures/phone_placement.svg" alt="Placement of smartphone for data acquisition" width="250"/>
 </center>
 
