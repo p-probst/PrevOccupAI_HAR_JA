@@ -23,6 +23,7 @@ synchronization jump at the beginning: after all sensors are connected
 (1) stand still for ten seconds
 (2) ten jumps
 (3) stand still for ten seconds
+
 Available Functions
 -------------------
 [Public]
@@ -34,7 +35,7 @@ _remove_synchronization_jump(...): Identifies a synchronization jump in the acce
 _walking_onset_detection(...): gets the indices of where the walking tasks start and end based on the y-axis of the phone's accelerometer.
 _get_task_indices_onset(...): gets the indices for when each walking task starts and stops.
 _remove_short_segments(...): removes segments that are shorter than the set minimum segment length.
-_jump_peak_detection(...): gets the indices of the jumps perfromed between standing/cabinets sub-activities.
+_jump_peak_detection(...): gets the indices of the jumps performed between standing/cabinets sub-activities.
 _get_task_indices_peaks(...): generates the task indices for each performed task.
 ------------------
 """
@@ -210,8 +211,8 @@ def crop_segments(segmented_tasks: List[pd.DataFrame], n_seconds: int = 10, fs: 
 # ------------------------------------------------------------------------------------------------------------------- #
 # private functions
 # ------------------------------------------------------------------------------------------------------------------- #
-def _remove_synchronization_jump(y_acc: np.array, sensor_data_df: pd.DataFrame, jump_offset_seconds: int,
-                                 fs: int = 100, plot: bool = False) -> Tuple[np.array, pd.DataFrame]:
+def _remove_synchronization_jump(y_acc: np.ndarray, sensor_data_df: pd.DataFrame, jump_offset_seconds: int,
+                                 fs: int = 100, plot: bool = False) -> Tuple[np.ndarray, pd.DataFrame]:
     """
     Identifies a synchronization jump in the acceleration signal and determines the position to cut the signal.
     The function locates the maximum acceleration value within the first three minutes of the recording, assuming
@@ -256,7 +257,7 @@ def _remove_synchronization_jump(y_acc: np.array, sensor_data_df: pd.DataFrame, 
     return y_acc[cut_pos:], sensor_data_df.iloc[cut_pos:, :].reset_index(drop=True)
 
 
-def _walking_onset_detection(y_acc: np.array, threshold: float, fs: int = 100, envelope_type: str = 'rms',
+def _walking_onset_detection(y_acc: np.ndarray, threshold: float, fs: int = 100, envelope_type: str = 'rms',
                              envelope_param: int = 100, min_segment_length_seconds: int = 30) -> List[Tuple[int, int]]:
     """
     gets the indices of where the walking tasks start and end based on the y-axis of the phone's accelerometer.
@@ -280,7 +281,7 @@ def _walking_onset_detection(y_acc: np.array, threshold: float, fs: int = 100, e
     if not 0 <= threshold <= 1:
         raise IOError(f"The threshold has to be between 0 and 1. Provided value: {threshold}")
 
-    # get the abolute of the signal
+    # get the absolute of the signal
     y_acc = np.abs(y_acc)
 
     # get the envelope of the signal
@@ -298,14 +299,14 @@ def _walking_onset_detection(y_acc: np.array, threshold: float, fs: int = 100, e
     return task_indices
 
 
-def _get_task_indices_onset(binary_onset: np.array) -> List[Tuple[int, int]]:
+def _get_task_indices_onset(binary_onset: np.ndarray) -> List[Tuple[int, int]]:
     """
     gets the indices for when each walking task starts and stops.
     :param binary_onset: the binarized envelope of the signal
     :return: the start and stop indices of each performed task in a list of tuples.
     """
 
-    # get the start and stopps of each task
+    # get the start and stops of each task
     # (1) calculate the difference
     diff_sig = np.diff(binary_onset)
 
@@ -348,14 +349,14 @@ def _remove_short_segments(task_indices: List[Tuple[int, int]], min_length_sampl
     return corrected_indices
 
 
-def _jump_peak_detection(y_acc: np.array, activity: str, peak_height: float = 0.4,
+def _jump_peak_detection(y_acc: np.ndarray, activity: str, peak_height: float = 0.4,
                          peak_dist_seconds: int = 2 * MINUTE, fs: int = 100) -> List[Tuple[int, int]]:
     """
     gets the indices of the jumps performed between standing/cabinets sub-activities.
     :param y_acc: y-axis of the phone's accelerometer signal.
     :param activity: the name of the activity as a string
     :param peak_height: the peak height for when applying peak-based segmentation. Default: 0.4
-    :param peak_dist_seconds: the distance between peaks to avoid detecting wrong peaks in samles. Default: 120 (seconds)
+    :param peak_dist_seconds: the distance between peaks to avoid detecting wrong peaks in samples. Default: 120 (seconds)
     :param fs: the sampling frequency of the signal.
     :return: the start and stop indices of each performed task in a list of tuples.
     """
@@ -369,7 +370,7 @@ def _jump_peak_detection(y_acc: np.array, activity: str, peak_height: float = 0.
     # adjust peaks in case there is more/less found than the expected amount
     # (this correction is only needed for subject P001/standing and P019/cabinets)
     if activity == STAND and len(jump_indices) < NUM_JUMPS_STAND:
-        # print("less then the expected amount of jumps found. Adding peak at the end of signal.")
+        # print("less than the expected amount of jumps found. Adding peak at the end of signal.")
         # add a jump at the end of the signal
         jump_indices = np.append(jump_indices, len(y_acc) - 1)
 
@@ -384,7 +385,7 @@ def _jump_peak_detection(y_acc: np.array, activity: str, peak_height: float = 0.
     return task_indices
 
 
-def _get_task_indices_peaks(jump_indices: np.array, fs: int = 100) -> List[Tuple[int, int]]:
+def _get_task_indices_peaks(jump_indices: np.ndarray, fs: int = 100) -> List[Tuple[int, int]]:
     """
     generates the task indices for each performed task.
     :param jump_indices: the indices of the jumps.

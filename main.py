@@ -7,7 +7,8 @@ from pathlib import Path
 import numpy as np
 
 # internal imports
-from constants import (VALID_SENSORS, SEGMENTED_DATA_FOLDER, EXTRACTED_FEATURES_FOLDER,
+from constants import (VALID_SENSORS, MAIN_LABEL_MAP,
+                       SEGMENTED_DATA_FOLDER, EXTRACTED_FEATURES_FOLDER,
                        RESULTS_FOLDER, MODEL_DEVELOPMENT_FOLDER , MODEL_EVALUATION_FOLDER,
                        RANDOM_SEED)
 from raw_data_processor import generate_segmented_dataset
@@ -15,21 +16,17 @@ from feature_extractor import extract_features
 from HAR import perform_model_configuration, test_production_models
 from file_utils import create_dir
 
-
-
-
 # ------------------------------------------------------------------------------------------------------------------- #
 # constants
 # ------------------------------------------------------------------------------------------------------------------- #
-# definition of folder_path
-RAW_DATA_FOLDER_PATH_MD = r'E:\Prevoccupai_HAR\model_development' #   E:\Prevoccupai_HAR\subject_data\raw_signals_backups\acquisitions
-RAW_DATA_FOLDER_PATH_ME = r'E:\Prevoccupai_HAR\work_simulation\raw_data' #    E:\Prevoccupai_HAR\model_evaluation_corrected
-OUTPUT_FOLDER_PATH = r'E:\Prevoccupai_HAR\HAR_JA_article' # E:\Prevoccupai_HAR\test
+# definition of folder_path (you can change these to the ones on your system to ensure that the path is valid)
+RAW_DATA_FOLDER_PATH_MD = r'E:\Prevoccupai_HAR\model_development'
+RAW_DATA_FOLDER_PATH_ME = r'E:\Prevoccupai_HAR\model_evaluation'
+OUTPUT_FOLDER_PATH = r'E:\Prevoccupai_HAR\HAR_output'
 
-# definition of window size and sampling rate
-W_SIZE_S = 5.0
-FS = 100
-LABEL_MAP = {'sitting': 0, 'standing': 1, 'walking': 2}
+NUM_SUBJECTS_MD = 20
+NUM_MODELS = 3 # running KNN, SVM, and RF
+NUM_FILES_ME = 14 # expecting 13 plots + the .csv file containing the results
 
 # ------------------------------------------------------------------------------------------------------------------- #
 # argument parsing
@@ -44,8 +41,7 @@ parser.add_argument('--output_path', default=OUTPUT_FOLDER_PATH, help='Path to o
 # (2) dataset parameters
 parser.add_argument('--fs', default=100, type=int, help="The sampling frequency used during data acquisition.")
 parser.add_argument('--window_size_s', default=5.0, type=float, help='The window size (in seconds) for signal windowing.')
-parser.add_argument('--load_sensors', nargs="+", default=VALID_SENSORS, help="The sensor to be loaded (as List[str]), e.g., [\"ACC\", \"GYR\"].")
-parser.add_argument('--window_scaler', default=None, choices=['minmax', 'standard', None], help="The scaling that should be applied to each data window.")
+parser.add_argument('--load_sensors', nargs="+", default=VALID_SENSORS, help="The sensor to be loaded (as List[str]), e.g., [\"ACC\", \"GYR\"]. The default is set to use all sensors.")
 parser.add_argument('--balancing_type', default='main_classes', choices=['main_classes', 'sub_classes'], help="The balancing type to use for data balancing.")
 parser.add_argument('--output_file_type', default='.npy', choices=['.npy', '.csv'], help="The output file type for data segmentation and feature extraction.")
 parser.add_argument('--input_file_type', default='.npy', choices=['.npy', '.csv'], help="The input file type for feature extraction. Should match the file type that was chosen for data segmentation.")
@@ -69,8 +65,14 @@ if __name__ == '__main__':
     output_path = Path(parsed_args.output_path)
     output_file_type = parsed_args.output_file_type
 
-    # check whether the segmented dataset has been generated
-    if not os.path.exists(os.path.join(output_path, SEGMENTED_DATA_FOLDER)):
+    # path to segmented data folder
+    segmented_data_path = output_path / SEGMENTED_DATA_FOLDER
+
+    # path to feature data folder
+    feature_data_path = output_path / EXTRACTED_FEATURES_FOLDER / f'w_{int(w_size * fs)}_sc_none'
+
+    # check whether the segmented dataset has been generated or not all subjects have been processed yet
+    if not segmented_data_path.exists() or sum(1 for p in segmented_data_path.iterdir() if p.is_dir()) < NUM_SUBJECTS_MD:
         print("\n# ----------------------------------------------- #")
         print("# ------- 1. generating segmented dataset ------- #")
         print("# ----------------------------------------------- #")
@@ -87,29 +89,22 @@ if __name__ == '__main__':
                                    plot_cropped_tasks=plot_cropped_tasks,
                                    plot_segment_lines=plot_segment_lines)
 
-    # check whether the feature dataset has been generated
-    if not os.path.exists(os.path.join(output_path, EXTRACTED_FEATURES_FOLDER)):
+    # check whether the feature dataset has been generated or not all subjects have been processed yet
+    if not feature_data_path.exists() or sum(1 for p in feature_data_path.iterdir() if p.is_file() and p.suffix == output_file_type) < NUM_SUBJECTS_MD:
         print("\n# -------------------------------------- #")
         print("# ------- 2. extracting features ------- #")
         print("# -------------------------------------- #")
 
         # parse necessary inputs
-        window_scaler = parsed_args.window_scaler
         input_file_type = parsed_args.input_file_type
-
-        # path to segmented data folder
-        segmented_data_path = os.path.join(output_path, SEGMENTED_DATA_FOLDER)
 
         # extract features and save them to individual subject files
         extract_features(segmented_data_path, features_data_path=output_path,
-                         window_size=w_size, window_scaler=window_scaler,
+                         window_size=w_size,
                          default_input_file_type=input_file_type, output_file_type=output_file_type)
 
     # set random seed
     np.random.seed(RANDOM_SEED)
-
-    # path to folder containing the feature files for the different normalization types
-    feature_data_path = os.path.join(output_path, EXTRACTED_FEATURES_FOLDER)
 
     # parse necessary inputs
     me_dataset_path = Path(parsed_args.ME_dataset_path)
@@ -119,19 +114,28 @@ if __name__ == '__main__':
     # generate results folder
     results_folder = create_dir(output_path, RESULTS_FOLDER)
 
-    # Obtain th best KNN, SVN, and RF models and train for production
-    if not os.path.exists(os.path.join(output_path, RESULTS_FOLDER, MODEL_DEVELOPMENT_FOLDER)):
+    # path to model development results folder
+    md_results_folder = output_path/ RESULTS_FOLDER /MODEL_DEVELOPMENT_FOLDER
+
+    # path to model evaluation results folder
+    me_results_folder = output_path/ RESULTS_FOLDER /MODEL_EVALUATION_FOLDER
+
+    # train and test models (KNN, SVM, RF) on the features extracted from the model development dataset
+    if not md_results_folder.exists() or sum(1 for p in md_results_folder.iterdir() if p.is_file() and p.suffix == '.joblib') < NUM_MODELS:
         print("\n# -------------------------------------------------------------------------------------------------------------------------- #")
         print("# ------- 3. Training and Evaluating different models (Random Forest vs. KNN vs. SVM) on model development dataset ------- #")
         print("# -------------------------------------------------------------------------------------------------------------------------- #")
         perform_model_configuration(feature_data_path, results_folder,  balancing_type=balancing_type,
-                                    window_size_samples=int(W_SIZE_S * FS))
+                                    window_size_samples=int(w_size * fs))
 
-    # Test the production models KNN, SVM, RF on the real world dataset
-    if not os.path.exists(os.path.join(output_path, RESULTS_FOLDER, MODEL_EVALUATION_FOLDER)):
+    # test\evaluate the production models (KNN, SVM, RF) on the model evaluation (real world office work) dataset
+    if not me_results_folder.exists() or sum(1 for p in me_results_folder.iterdir() if p.is_file()) < NUM_FILES_ME:
         print("\n# -------------------------------------------------------------------------- #")
         print("# ------- 4. testing the trained models on model development dataset ------- #")
         print("# -------------------------------------------------------------------------- #")
-        test_production_models(me_dataset_path, results_folder, LABEL_MAP, fs=fs, w_size_sec=w_size,
+        test_production_models(me_dataset_path, results_folder, MAIN_LABEL_MAP, fs=fs, w_size_sec=w_size,
                                load_sensors=load_sensors)
 
+
+    print(f"All done! The results are available at {results_folder}.")
+    # ---- program end ---- #

@@ -7,7 +7,9 @@ Available Functions
 get_sliding_windows_indices(...): Function to obtain window indices with an adjustable overlap between windows
 window_data(...): Function to slice the data into windows defined by indices
 window_scaling(...): Performs scaling on each window using the provided scaler.
-validate_scaler_input(...): Checks whether the provided scaler is valid
+validate_scaler_input(...): Checks whether the provided scaler is valid.
+trim_data(...): Function to get the amount that needs to be trimmed from the data to accommodate full windowing.
+
 ------------------
 [Private]
 None
@@ -31,7 +33,7 @@ SCALERS = [MINMAX_SCALER, STANDARD_SCALER]
 # ------------------------------------------------------------------------------------------------------------------- #
 # public functions
 # ------------------------------------------------------------------------------------------------------------------- #
-def get_sliding_windows_indices(signal: np.array, fs: int, window_size: float, overlap: float = 0.5):
+def get_sliding_windows_indices(signal: np.ndarray, fs: int, window_size: float, overlap: float = 0.5):
     """
     Function to obtain window indices with an adjustable overlap between windows.
     :param signal: a 1-D signal or the time axis of multiple synchronised signals
@@ -90,7 +92,7 @@ def window_data(data, indices):
     return data[indices]
 
 
-def window_scaling(windowed_data: np.array, scaler: str = 'minmax') -> np.array:
+def window_scaling(windowed_data: np.ndarray, scaler: str = 'minmax') -> np.ndarray:
     """
     Performs scaling on each window using the provided scaler.
     :param windowed_data: the windowed data

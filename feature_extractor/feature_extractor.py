@@ -1,22 +1,22 @@
 """
-Functions for extracting features and windowing signal.
+Functions for extracting features from recorded signals.
 
 Available Functions
 -------------------
 [Public]
 extract_features(...): Extracts features for all subjects and activities.
-load_data(...): loads the data located at full_file_path.
-extract_tsfel_features(...): Extracts features from the data windows contained in windowed_data using TSFEL.
-extract_quaternion_features(...): Extracts quaterion-based features from the rotation vector sensor.
-load_json_file(...): Loads a json file.
 window_and_extract_features(...): windows the sensor data and extracts the features.
+pre_process_signals(...): Pre-processes the sensors contained in subject_data according to their sensor type.
 ------------------
 [Private]
 _validate_activity_input(...): Checks whether the provided activities are valid.
 _generate_outfolder(...): Generates the folders for storing the data.
+_load_data(...): loads the data located at full_file_path.
 _load_sensor_names(...): Loads the sensor names from a json file containing it.
 _pre_process_sensors(...): Pre-processes the sensors contained in data_array according to their sensor type.
 _extract_features(...): Extracts features from the windowed data.
+_extract_tsfel_features(...): Extracts features from the data windows contained in windowed_data using TSFEL.
+_extract_quaternion_features(...): Extracts quaterion-based features from the rotation vector sensor.
 _get_labels(...): Gets the labels for the main and sub-activity corresponding to the file name.
 _save_subject_features(...): Saves the features extracted for a subject.
 ------------------
@@ -50,13 +50,14 @@ from file_utils import remove_file_duplicates, create_dir, load_json_file
 # constants
 # ------------------------------------------------------------------------------------------------------------------- #
 TSFEL_CONFIG_FILE = 'cfg_file.json'
+LENGTH_IR_SAMPLES = 250 # definition of length of impulse response that results from applying the low-pass filter
 
 
 # ------------------------------------------------------------------------------------------------------------------- #
 # public functions
 # ------------------------------------------------------------------------------------------------------------------- #
-def extract_features(data_path: str, features_data_path: str | Path, activities: List[str] = None, fs: int = 100,
-                     window_size: float = 1.5, overlap: float = 0.5, window_scaler: str = None,
+def extract_features(data_path: str | Path, features_data_path: str | Path, activities: List[str] = None, fs: int = 100,
+                     window_size: float = 5.0, overlap: float = 0.5, window_scaler: str = None,
                      output_file_type: str = NPY, default_input_file_type: str = NPY) -> None:
     """
     Extracts features for all subjects and activities contained in data_path. Features are extracted window-wise.
@@ -160,7 +161,7 @@ def extract_features(data_path: str, features_data_path: str | Path, activities:
 
                     # (1) load the data
                     print(f"({file_num}.1) loading file {file_num}/{num_files}: {file}")
-                    data, sensor_names = load_data(os.path.join(subject_folder_path, file))
+                    data, sensor_names = _load_data(os.path.join(subject_folder_path, file))
 
                     # remove time column
                     data = data[:, 1:]
@@ -170,7 +171,7 @@ def extract_features(data_path: str, features_data_path: str | Path, activities:
                     data = _pre_process_sensors(data, sensor_names)
 
                     # remove impulse response
-                    data = data[250:, :]
+                    data = data[LENGTH_IR_SAMPLES:, :]
 
                     # (3) window the data
                     # (since all are of the same length it is possible to use just one sensor channel)
@@ -256,94 +257,10 @@ def window_and_extract_features(data: np.ndarray, sensor_names: List[str], featu
     return features_df
 
 
-def load_data(full_file_path: str) -> np.array:
-    """
-    loads the data located at full_file_path.
-    :param full_file_path: the path to the file to be loaded
-    :return: a numpy.array containing the loaded data
-    """
-
-    # retrieve the file type from the path
-    file_type = os.path.splitext(full_file_path)[1]
-
-    # load the file
-    if file_type == NPY:
-
-        activity_data = np.load(full_file_path)
-
-        # get the sensor names
-        sensor_names = _load_sensor_names(full_file_path)
-
-    else:  # file_type == CSV
-
-        activity_data = pd.read_csv(full_file_path, sep=';')
-
-        # get the names of the sensors from the DataFrame
-        sensor_names = activity_data.columns.values[1:]
-
-        # get data as numpy array
-        activity_data = activity_data.values
-
-    return activity_data, sensor_names
-
-
-def extract_tsfel_features(windowed_data: np.array, sensor_names: List[str], features_dict: Dict[Any, Any],
-                           fs: int = 100) -> pd.DataFrame:
-    """
-    Extracts features from the data windows contained in windowed_data using TSFEL. The extracted features are defined
-    in 'cfg_file.json'.
-    :param windowed_data: The windowed sensor data
-    :param sensor_names: the name of the sensors contained in windowed_data
-    :param features_dict: the features loaded from cfg_file.json
-    :param fs: the sampling rate (in Hz). Default: 100
-    :return: pandas.DataFrame containing the extracted features
-    """
-
-    print("--> TSFEL-based features")
-
-    # transform the windowed data array into a list of pandas.DataFrames. This data structure works better for TSFEL
-    windowed_dfs = []
-
-    # cycle over the windows
-    for window in range(windowed_data.shape[0]):
-
-        # create pandas.DataFrame containing the data
-        df_window = pd.DataFrame(windowed_data[window, :, :], columns=sensor_names)
-
-        windowed_dfs.append(df_window)
-
-    tsfel_features = tsfel.time_series_features_extractor(features_dict, windowed_dfs, fs=fs)
-
-    return tsfel_features
-
-
-def extract_quaternion_features(quat_windowed_data) -> pd.DataFrame:
-    """
-    Extracts quaternion-based features from the rotation vector sensor.
-    :param quat_windowed_data: the windowed quaternion data
-    :return: pandas.DataFrame containing the extracted features
-    """
-
-    print("--> quaternion-based features")
-
-    # init array for holding the features
-    quat_features = np.zeros((quat_windowed_data.shape[0], 3))
-
-    # cycle over the windows extracting only the quaternion data
-    for i, quat_window in tqdm(enumerate(quat_windowed_data), total=quat_windowed_data.shape[0],
-                               ncols=50, bar_format="{l_bar}{bar}| {percentage:3.0f}% {elapsed}"):
-
-        # calculate quaternion features
-        quat_features[i] = geodesic_distance(quat_window, scalar_first=False)
-
-    # create pandas.DataFrame
-    return pd.DataFrame(quat_features, columns=["quat_mean_dist", "quat_std_dist", "quat_total_dist"])
-
-
 def pre_process_signals(subject_data: pd.DataFrame, sensor_names: List[str], w_size: float,
                          fs: int) -> Tuple[np.ndarray, np.ndarray]:
     """
-    Pre-processes the sensors contained in data_array according to their sensor type. Removes samples from the
+    Pre-processes the sensors contained in subject_data according to their sensor type. Removes samples from the
     impulse response of the filters and trims the data and label vector to accommodate full windowing of the data.
 
     :param subject_data: pandas.DataFrame containing the sensor data
@@ -353,7 +270,7 @@ def pre_process_signals(subject_data: pd.DataFrame, sensor_names: List[str], w_s
     :return: the processed sensor data and label vector
     """
 
-    # convert data to numpy array
+    # convert data to numpy array and remove time column
     sensor_data = subject_data.values[:,1:-1]
 
     # get the label vector
@@ -363,18 +280,14 @@ def pre_process_signals(subject_data: pd.DataFrame, sensor_names: List[str], w_s
     sensor_data = _pre_process_sensors(sensor_data, sensor_names)
 
     # remove impulse response
-    sensor_data = sensor_data[250:,:]
-    labels = labels[250:]
+    sensor_data = sensor_data[LENGTH_IR_SAMPLES:,:]
+    labels = labels[LENGTH_IR_SAMPLES:]
 
     # trim the data to accommodate full windowing
     sensor_data, to_trim = trim_data(sensor_data, w_size=w_size, fs=fs)
     labels = labels[:-to_trim]
 
     return sensor_data, labels
-
-
-
-
 
 # ------------------------------------------------------------------------------------------------------------------- #
 # private functions
@@ -423,6 +336,37 @@ def _generate_outfolder(features_data_path: str, window_scaler: str, window_size
     output_path = create_dir(features_data_path, os.path.join('extracted_features', folder_name))
 
     return output_path
+
+
+def _load_data(full_file_path: str) -> Tuple[np.ndarray, List[str]]:
+    """
+    loads the data located at full_file_path.
+    :param full_file_path: the path to the file to be loaded
+    :return: a numpy.array containing the loaded data
+    """
+
+    # retrieve the file type from the path
+    file_type = os.path.splitext(full_file_path)[1]
+
+    # load the file
+    if file_type == NPY:
+
+        activity_data = np.load(full_file_path)
+
+        # get the sensor names
+        sensor_names = _load_sensor_names(full_file_path)
+
+    else:  # file_type == CSV
+
+        activity_data = pd.read_csv(full_file_path, sep=';')
+
+        # get the names of the sensors from the DataFrame
+        sensor_names = activity_data.columns.tolist()[1:]
+
+        # get data as numpy array
+        activity_data = activity_data.values
+
+    return activity_data, sensor_names
 
 
 def _load_sensor_names(data_file_path: str) -> List[str]:
@@ -510,7 +454,7 @@ def _extract_features(windowed_data: np.array, sensor_names: List[str],
     :return: pandas.DataFrame containing the extracted features
     """
     # extract features using TSFEL for all the sensors
-    features_df = extract_tsfel_features(windowed_data, sensor_names, features_dict, fs=fs)
+    features_df = _extract_tsfel_features(windowed_data, sensor_names, features_dict, fs=fs)
 
     # check if there are quaternions in the data
     if any(ROT in sensor for sensor in sensor_names):
@@ -519,7 +463,7 @@ def _extract_features(windowed_data: np.array, sensor_names: List[str],
         quat_cols = [col for col, sensor_name in enumerate(sensor_names) if ROT in sensor_name]
 
         # extract features from only the quaternions
-        quat_features = extract_quaternion_features(windowed_data[:, :, quat_cols])
+        quat_features = _extract_quaternion_features(windowed_data[:, :, quat_cols])
 
         # concatenate features to one DataFrame
         features_df = pd.concat([features_df, quat_features], axis=1)
@@ -527,7 +471,60 @@ def _extract_features(windowed_data: np.array, sensor_names: List[str],
     return features_df
 
 
-def _get_labels(file_name: str, num_windows: int) -> pd.DataFrame():
+def _extract_tsfel_features(windowed_data: np.ndarray, sensor_names: List[str], features_dict: Dict[Any, Any],
+                            fs: int = 100) -> pd.DataFrame:
+    """
+    Extracts features from the data windows contained in windowed_data using TSFEL. The extracted features are defined
+    in 'cfg_file.json'.
+    :param windowed_data: The windowed sensor data
+    :param sensor_names: the name of the sensors contained in windowed_data
+    :param features_dict: the features loaded from cfg_file.json
+    :param fs: the sampling rate (in Hz). Default: 100
+    :return: pandas.DataFrame containing the extracted features
+    """
+
+    print("--> TSFEL-based features")
+
+    # transform the windowed data array into a list of pandas.DataFrames. This data structure works better for TSFEL
+    windowed_dfs = []
+
+    # cycle over the windows
+    for window in range(windowed_data.shape[0]):
+
+        # create pandas.DataFrame containing the data
+        df_window = pd.DataFrame(windowed_data[window, :, :], columns=sensor_names)
+
+        windowed_dfs.append(df_window)
+
+    tsfel_features = tsfel.time_series_features_extractor(features_dict, windowed_dfs, fs=fs)
+
+    return tsfel_features
+
+
+def _extract_quaternion_features(quat_windowed_data) -> pd.DataFrame:
+    """
+    Extracts quaternion-based features from the rotation vector sensor.
+    :param quat_windowed_data: the windowed quaternion data
+    :return: pandas.DataFrame containing the extracted features
+    """
+
+    print("--> quaternion-based features")
+
+    # init array for holding the features
+    quat_features = np.zeros((quat_windowed_data.shape[0], 3))
+
+    # cycle over the windows extracting only the quaternion data
+    for i, quat_window in tqdm(enumerate(quat_windowed_data), total=quat_windowed_data.shape[0],
+                               ncols=50, bar_format="{l_bar}{bar}| {percentage:3.0f}% {elapsed}"):
+
+        # calculate quaternion features
+        quat_features[i] = geodesic_distance(quat_window, scalar_first=False)
+
+    # create pandas.DataFrame
+    return pd.DataFrame(quat_features, columns=["quat_mean_dist", "quat_std_dist", "quat_total_dist"])
+
+
+def _get_labels(file_name: str, num_windows: int) -> pd.DataFrame:
     """
     Gets the labels for the main and sub-activity corresponding to the file name. The file name encodes the main and
     sub-activity.
@@ -553,7 +550,7 @@ def _get_labels(file_name: str, num_windows: int) -> pd.DataFrame():
     return pd.DataFrame(label_data, columns=[MAIN_LABEL_KEY, SUB_LABEL_KEY])
 
 
-def _save_subject_features(subject_feature_df: pd.DataFrame(), subject_num: str, output_path: str,
+def _save_subject_features(subject_feature_df: pd.DataFrame, subject_num: str, output_path: str,
                            file_type: str = '.npy') -> None:
     """
     Saves the features extracted for a subject.

@@ -119,7 +119,7 @@ def test_production_models(raw_data_path: str | Path, results_path: str | Path, 
         cfg = tsfel.load_json(f".\\HAR\\cfg_file_production_models.json")
         features_df = window_and_extract_features(sensor_data, sensor_names, cfg, w_size_sec=w_size_sec, fs=fs)
 
-        # get a list with the models to be tested
+        # define list with the models to be tested
         models_list = [KNN, SVM, RF]
 
         # list for holding the accuracies
