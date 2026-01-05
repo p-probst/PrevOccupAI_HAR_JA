@@ -30,7 +30,7 @@ from sklearn.base import ClassifierMixin
 
 # internal imports
 from constants import CLASS_INSTANCES_JSON, FEATURE_COLS_KEY, SUB_ACTIVITIES_WALK_LABELS, SUB_ACTIVITIES_STAND_LABELS, \
-    NPY, SUB_LABEL_KEY, MAIN_LABEL_KEY, RANDOM_SEED
+    NPY, SUB_LABEL_KEY, MAIN_LABEL_KEY
 from file_utils import remove_file_duplicates, load_json_file
 
 # ------------------------------------------------------------------------------------------------------------------- #
@@ -97,7 +97,7 @@ def load_features(feature_data_path: str, balance_data: str = None, default_inpu
     loaded_subject_ids = []
 
     # variable to hold the number of instances per subject
-    instances_per_subject = None
+    instances_per_subject_counter = 0
 
     # cycle over the subject files
     for subject_file in tqdm(subject_files, desc="loading feature data"):
@@ -117,7 +117,10 @@ def load_features(feature_data_path: str, balance_data: str = None, default_inpu
                                                      instances_stand=instances_per_sub_class[1],
                                                      instances_walk=instances_per_sub_class[2])
 
-        instances_per_subject = subject_features.shape[0]
+        # print(f"{subject_file}: {subject_features.shape[0]}")
+        instances_per_subject_counter += subject_features.shape[0]
+
+
         # generate subject id (needed for groupKFold)
         subject_id = [subject_file.split('.')[0]] * len(subject_features)
 
@@ -127,7 +130,7 @@ def load_features(feature_data_path: str, balance_data: str = None, default_inpu
 
     # combine all data to one array and transform it to a pandas.DataFrame
     loaded_features = pd.DataFrame(np.vstack(loaded_features), columns=feature_names)
-    print(f"Total number of instances per subject: {instances_per_subject}")
+    print(f"Total number of instances per subject: ~{instances_per_subject_counter // len(subject_files)}")
     print(f"Total number of instances: {loaded_features.shape[0]} over {len(subject_files)} subjects")
 
     # get the main and sub-classes

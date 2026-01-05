@@ -125,8 +125,7 @@ if __name__ == '__main__':
         print("\n# -------------------------------------------------------------------------------------------------------------------------- #")
         print("# ------- 3. Training and Evaluating different models (Random Forest vs. KNN vs. SVM) on model development dataset ------- #")
         print("# -------------------------------------------------------------------------------------------------------------------------- #")
-        perform_model_configuration(feature_data_path, results_folder,  balancing_type=balancing_type,
-                                    window_size_samples=int(w_size * fs))
+        perform_model_configuration(feature_data_path, results_folder,  balancing_type=balancing_type)
 
     # test\evaluate the production models (KNN, SVM, RF) on the model evaluation (real world office work) dataset
     if not me_results_folder.exists() or sum(1 for p in me_results_folder.iterdir() if p.is_file()) < NUM_FILES_ME:

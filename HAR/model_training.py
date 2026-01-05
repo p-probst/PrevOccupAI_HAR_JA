@@ -31,7 +31,7 @@ import matplotlib.pyplot as plt
 from pathlib import Path
 
 # internal imports
-from .load import load_features
+from .load import load_features, MAIN_CLASS_BALANCING
 from .feature_selection import remove_low_variance, remove_highly_correlated_features, select_k_best_features
 from constants import RANDOM_SEED, MODEL_DEVELOPMENT_FOLDER
 from file_utils import create_dir
@@ -53,7 +53,7 @@ ESTIMATOR = 'estimator'
 # ------------------------------------------------------------------------------------------------------------------- #
 
 
-def perform_model_configuration(data_path: str | Path, results_path: str | Path, balancing_type: str, window_size_samples: int) -> None:
+def perform_model_configuration(data_path: str | Path, results_path: str | Path, balancing_type: str) -> None:
     """
     Performs feature selection and grid search for 3 models (KNN, SVM, RF) and saves the best model, along with the
     metrics and confusion matrices.
@@ -66,7 +66,6 @@ def perform_model_configuration(data_path: str | Path, results_path: str | Path,
                                        the same amount of instances.
                          'sub_classes': for balancing that all sub-classes have the same amount of instances
                          None: no balancing applied. Default: None
-    :param window_size_samples: the number of samples per window. Used for creating folder and file names.
     :return: None
     """
     # define model dictionary
@@ -85,10 +84,10 @@ def perform_model_configuration(data_path: str | Path, results_path: str | Path,
     }
 
     # path to feature folder (change the folder name to run the different normalization schemes)
-    feature_data_folder = os.path.join(data_path, f"w_{window_size_samples}_sc_none")
+    # feature_data_folder = os.path.join(data_path, f"w_{window_size_samples}_sc_none")
 
     # load feature, labels, and subject IDs
-    X, y_main, y_sub, subject_ids = load_features(feature_data_folder, balance_data=balancing_type)
+    X, y_main, y_sub, subject_ids = load_features(data_path, balance_data=balancing_type)
 
     # split of train and test set
     splitter = GroupShuffleSplit(test_size=0.2, n_splits=1, random_state=RANDOM_SEED)
@@ -99,9 +98,10 @@ def perform_model_configuration(data_path: str | Path, results_path: str | Path,
     X_test = X.iloc[test_idx]
 
     print(f"Total number of instances for training: {X_train.shape[0]}")
+    print(f"Total number of instances for testing: {X_test.shape[0]}")
 
     # get y depending on the balancing type
-    if balancing_type == 'main_classes':
+    if balancing_type == MAIN_CLASS_BALANCING:
         y_train = y_main.iloc[train_idx]
         y_test = y_main.iloc[test_idx]
 
