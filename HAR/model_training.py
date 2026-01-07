@@ -25,7 +25,7 @@ from sklearn.svm import SVC
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import StandardScaler
-from sklearn.model_selection import GridSearchCV, GroupKFold, GroupShuffleSplit
+from sklearn.model_selection import GridSearchCV, GroupKFold, GroupShuffleSplit, PredefinedSplit
 from typing import Dict, Any, List, Union
 import matplotlib.pyplot as plt
 from pathlib import Path
@@ -89,9 +89,22 @@ def perform_model_configuration(data_path: str | Path, results_path: str | Path,
     # load feature, labels, and subject IDs
     X, y_main, y_sub, subject_ids = load_features(data_path, balance_data=balancing_type)
 
-    # split of train and test set
-    splitter = GroupShuffleSplit(test_size=0.2, n_splits=1, random_state=RANDOM_SEED)
-    train_idx, test_idx = next(splitter.split(X, y_main, groups=subject_ids))
+    # split of train and test set (group shuffle split)
+    #splitter = GroupShuffleSplit(test_size=0.2, n_splits=1, random_state=RANDOM_SEED)
+    #train_idx, test_idx = next(splitter.split(X, y_main, groups=subject_ids))
+
+    # split train and test (predefined split)
+    test_subjects = {"P001", "P002", "P005", "P008", "P012", "P015"}
+
+    # build test_fold array: -1 = train, 0 = test
+    test_fold = np.array([0 if sid in test_subjects else -1 for sid in subject_ids])
+
+    # predefined split
+    splitter = PredefinedSplit(test_fold)
+
+    # retrieve indices
+    train_idx,test_idx = next(splitter.split())
+
 
     # get train and test sets
     X_train = X.iloc[train_idx]
