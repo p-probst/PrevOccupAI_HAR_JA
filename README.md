@@ -28,7 +28,26 @@ To cite the article please use: (INSERT CITATION ONCE PUBLISHED)
 
 ## 3. Dataset
 
-The two sub-datasets used in this repository can be downloaded access via prevoccupai-har@dfki.de
+The two sub-datasets used in this repository can be access by writing an E-Mail to:
+
+__prevoccupai-har@dfki.de__
+
+To facilitate the purpose please use the following template:
+
+```text
+Subject: 
+Access Request: PrevOccupAI-HAR
+
+Text:
+I request access to the PrevOccupAI-HAR dataset.
+
+Name: [INSERT YOUR NAME]
+Institution: [INSERT YOUR INSTITUTION]
+Research Field: [INSERT YOUR RESEARCH FIELD]
+```
+
+Once your access has been granted, you'll receive an invitation to a `Microsoft Teams Folder` that contains the dataset
+as a `.zip`-file.
 
 For both datasets, data was acquired using a Xiamoi Redmi Note 9 smartphone that was strapped to the subject's chest, 
 as shown below.
