@@ -146,24 +146,44 @@ _Recording Sessions_
 Each of the five recording sessions corresponds to one activity-related folder contained within each participant directory.
 
 `cabinets/`:  
+<p align="center">
+<img src="./figures/session_cabinets.svg " alt="Recording sessions for activities related to standing: preparing coffee and moving objects in a cabinet" width="400">
+</p>
+
 This session contains __two standing tasks__ involving cabinet-related activities, each lasting 07:30 min (total 15 min): 
 1. Simulation of preparing and drinking coffe or tea. 
 2. Organizing items such as folders, papers, and boxes inside the cabinet.
 
-`sitting/`:  
+`sitting/`:
+<p align="center">
+<img src="./figures/session_sit.svg " alt="Recording sessions for activities related to sitting: sitting while working on a computer" width="400">
+</p>
+
 This session contains data while participants were sitting and working at a computer for 15 min.
 
 `stairs/`:  
+<p align="center">
+<img src="./figures/session_stairs.svg " alt="Recording sessions for activities related to walking: ascending and descending stairs" width="400">
+</p>
+
 This session comprises __alternating__ stairs ascend and descent (total 5 min):
 * Participants __P002, P004, and P007__ performed eight segments (four ascents and four descents, i.e, up, down, up, down, etc.) of approx. 35 seconds each.
 * __All other participants__ performed (two stair ascents and two descents), each lasting 01:15 min.
 
 `standing/:`  
+<p align="center">
+<img src="./figures/session_stand.svg " alt="Recording sessions for activities related to standing: stand still and standing while conversing" width="400">
+</p>
+
 This sessions consists of __two standing task__, each lasting  07:30 min (total 15 min)
 1. standing still. For participant comfort, this task was split into two segments recorded at the beginning and the end of the session.
 2. standing while conversing. Participants were instructed to stand naturally, simulating situations such as waiting for an elevator, a colleague, or in outside a meeting room.
 
 `waking/:`  
+<p align="center">
+<img src="./figures/session_walk.svg " alt="Recording sessions for activities related to walking: walking at three different paces" width="400">
+</p>
+
 This session involved participants walking at three paces on even and stable ground. Each walking speed was recorded for 
 05:00 min (total 15 minutes):
 1. walking slow
