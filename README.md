@@ -32,7 +32,7 @@ The two sub-datasets used in this repository can be access by writing an E-Mail 
 
 __prevoccupai-har@dfki.de__
 
-To facilitate the purpose please use the following template:
+To facilitate the process please use the following template:
 
 ```text
 Subject: 
