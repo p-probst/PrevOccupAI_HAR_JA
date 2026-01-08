@@ -8,9 +8,9 @@ controlled conditions, featuring 20 subjects performing nine sub-activities asso
 from 13 subjects carrying out their daily office work for six hours continuously. Three machine learning models, namely 
 k-nearest neighbors (KNN), support vector machine (SVM), and random forest, were trained on the model development 
 dataset to classify the three main classes independently of sub-activity variation. The models achieved accuracies of 
-89.80&nbsp;%, 89.98&nbsp;%, and 92.10&nbsp;% for the KNN, SVM, and Random Forest, respectively, on the development 
-dataset. When deployed on the real-world dataset, the models attained mean accuracies of 73.27&nbsp;%, 79.97&nbsp;%, and 
-77.20&nbsp;%, reflecting performance degradations between 10.01&nbsp;% and 16.53&nbsp;%. Analysis of sequential 
+90.94&nbsp;%, 92.33&nbsp;%, and 93.02&nbsp;% for the KNN, SVM, and Random Forest, respectively, on the development 
+dataset. When deployed on the real-world dataset, the models attained mean accuracies of 69.32&nbsp;%, 79.43&nbsp;%, and 
+77.81&nbsp;%, reflecting performance degradations between 21.62&nbsp;% and 12.90&nbsp;%. Analysis of sequential 
 predictions revealed frequent short-duration misclassifications, predominantly between sitting and standing, resulting 
 in unstable model outputs. The findings highlight key challenges in transitioning HAR models from controlled to 
 real-world contexts and point to future research directions involving temporal deep learning architectures or 
