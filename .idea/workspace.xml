@@ -4,9 +4,10 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="05428d1d-ca52-4ab9-9473-3478bc5e9e70" name="Changes" comment="corrected accuracy values in Abstract of README.md">
+    <list default="true" id="05428d1d-ca52-4ab9-9473-3478bc5e9e70" name="Changes" comment="minor changes README.md">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/HAR/model_testing.py" beforeDir="false" afterPath="$PROJECT_DIR$/HAR/model_testing.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/main.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -46,7 +47,7 @@
   <component name="PropertiesComponent">{
   &quot;keyToString&quot;: {
     &quot;ModuleVcsDetector.initialDetectionPerformed&quot;: &quot;true&quot;,
-    &quot;Python.main.executor&quot;: &quot;Debug&quot;,
+    &quot;Python.main.executor&quot;: &quot;Run&quot;,
     &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
     &quot;RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252&quot;: &quot;true&quot;,
     &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
@@ -230,7 +231,23 @@
       <option name="project" value="LOCAL" />
       <updated>1767875400673</updated>
     </task>
-    <option name="localTasksCounter" value="16" />
+    <task id="LOCAL-00016" summary="minor changes README.md">
+      <option name="closed" value="true" />
+      <created>1767891659120</created>
+      <option name="number" value="00016" />
+      <option name="presentableId" value="LOCAL-00016" />
+      <option name="project" value="LOCAL" />
+      <updated>1767891659120</updated>
+    </task>
+    <task id="LOCAL-00017" summary="minor changes README.md">
+      <option name="closed" value="true" />
+      <created>1767891704496</created>
+      <option name="number" value="00017" />
+      <option name="presentableId" value="LOCAL-00017" />
+      <option name="project" value="LOCAL" />
+      <updated>1767891704496</updated>
+    </task>
+    <option name="localTasksCounter" value="18" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -260,6 +277,7 @@
     <MESSAGE value="implemented predefined split to ensure all subjects from ME dataset are not seen during model training." />
     <MESSAGE value="added images to README.md visualizing each of the recording sessions for clarity" />
     <MESSAGE value="corrected accuracy values in Abstract of README.md" />
-    <option name="LAST_COMMIT_MESSAGE" value="corrected accuracy values in Abstract of README.md" />
+    <MESSAGE value="minor changes README.md" />
+    <option name="LAST_COMMIT_MESSAGE" value="minor changes README.md" />
   </component>
 </project>

@@ -22,9 +22,23 @@ Sensor-based Human Activity Recognition in Office Environments" submitted to the
 Wearable Sensors: Recent Advances and Prospects". For further details on the methodology, please consider reading the
 the publication.
 
-The article can be accessed at: (INSERT LINK ONCE PUBLISHED)
+The article can be accessed at: https://doi.org/10.3390/electronics15040807
 
-To cite the article please use: (INSERT CITATION ONCE PUBLISHED)
+To cite the article please use: 
+```text
+@Article{electronics15040807,
+AUTHOR = {Probst, Phillip and Santos, Sara and Barros, Gonçalo and Koch, Philipp and Vigário, Ricardo and Gamboa, Hugo},
+TITLE = {PrevOccupAI-HAR: A Public Domain Dataset for Smartphone Sensor-Based Human Activity Recognition in Office Environments},
+JOURNAL = {Electronics},
+VOLUME = {15},
+YEAR = {2026},
+NUMBER = {4},
+ARTICLE-NUMBER = {807},
+URL = {https://www.mdpi.com/2079-9292/15/4/807},
+ISSN = {2079-9292},
+DOI = {10.3390/electronics15040807}
+}
+```
 
 ## 3. Dataset
 

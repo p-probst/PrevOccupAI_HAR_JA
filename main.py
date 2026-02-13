@@ -20,9 +20,9 @@ from file_utils import create_dir
 # constants
 # ------------------------------------------------------------------------------------------------------------------- #
 # definition of folder_path (you can change these to the ones on your system to ensure that the path is valid)
-RAW_DATA_FOLDER_PATH_MD = r'E:\Prevoccupai_HAR\model_development'
-RAW_DATA_FOLDER_PATH_ME = r'E:\Prevoccupai_HAR\model_evaluation'
-OUTPUT_FOLDER_PATH = r'E:\Prevoccupai_HAR\HAR_output'
+RAW_DATA_FOLDER_PATH_MD = r'D:\Prevoccupai_HAR\model_development'
+RAW_DATA_FOLDER_PATH_ME = r'D:\Prevoccupai_HAR\model_evaluation'
+OUTPUT_FOLDER_PATH = r'D:\Prevoccupai_HAR\HAR_output'
 
 NUM_SUBJECTS_MD = 20
 NUM_MODELS = 3 # running KNN, SVM, and RF
@@ -108,7 +108,6 @@ if __name__ == '__main__':
 
     # parse necessary inputs
     me_dataset_path = Path(parsed_args.ME_dataset_path)
-    load_sensors = parsed_args.load_sensors
     balancing_type = parsed_args.balancing_type
 
     # generate results folder
@@ -133,7 +132,7 @@ if __name__ == '__main__':
         print("# ------- 4. testing the trained models on model development dataset ------- #")
         print("# -------------------------------------------------------------------------- #")
         test_production_models(me_dataset_path, results_folder, MAIN_LABEL_MAP, fs=fs, w_size_sec=w_size,
-                               load_sensors=load_sensors)
+                               load_sensors=VALID_SENSORS) # only ACC, GYR, MAG needed as quaternion features were not used in the production models
 
 
     print(f"All done! The results are available at {results_folder}.")

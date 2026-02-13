@@ -122,8 +122,9 @@ def test_production_models(raw_data_path: str | Path, results_path: str | Path, 
         # define list with the models to be tested
         models_list = [KNN, SVM, RF]
 
-        # list for holding the accuracies
+        # list for holding the accuracies and the 95 % confidence interval
         acc_list = []
+        acc_ci95_list = []
 
         # list for holding the precisions
         precisions_list = []
@@ -147,12 +148,14 @@ def test_production_models(raw_data_path: str | Path, results_path: str | Path, 
 
             # calculate metrics
             acc = round(accuracy_score(true_labels, predictions) * 100, 2)
+            acc_ci95 = round(1.96 * np.sqrt((acc * (100 - acc))/ len(predictions)), 2)
             precision = round(precision_score(true_labels, predictions, average='weighted')*100, 2)
             recall = round(recall_score(true_labels, predictions, average='weighted')*100, 2)
             f1 = round(f1_score(true_labels, predictions, average='weighted')*100, 2)
 
             # append results to the lists
             acc_list.append(acc)
+            acc_ci95_list.append(acc_ci95)
             precisions_list.append(precision)
             recalls_list.append(recall)
             f1_list.append(f1)
@@ -164,7 +167,7 @@ def test_production_models(raw_data_path: str | Path, results_path: str | Path, 
         while n < len(models_list):
 
             # add model and metrics to the results dict
-            results_dict.update({f"acc_{models_list[n]}": acc_list[n], f"precision_{models_list[n]}": precisions_list[n],
+            results_dict.update({f"acc_{models_list[n]}": acc_list[n], f"acc_95ci{models_list[n]}": acc_ci95_list[n], f"precision_{models_list[n]}": precisions_list[n],
                                  f"recall_{models_list[n]}": recalls_list[n], f"f1_score_{models_list[n]}": f1_list[n]})
             n+=1
 
@@ -172,7 +175,7 @@ def test_production_models(raw_data_path: str | Path, results_path: str | Path, 
         results_list.append(results_dict)
 
         # generate the plots with the models predictions for each subject
-        _plot_all_predictions(true_labels, predictions_list, acc_list, models_list, subject, folder_path)
+        _plot_all_predictions(true_labels, predictions_list, acc_list, models_list, subject, sensor_data[:, 0], folder_path)
 
     # create DataFrame with results
     results_df = pd.DataFrame(results_list)
@@ -230,7 +233,7 @@ def _expand_classification(clf_result: np.ndarray, w_size_sec: float, fs: int) -
 
 
 def _plot_all_predictions(labels: np.ndarray, expanded_predictions: List[List[int]], accuracies: List[float],
-                          model_names: List[str], subject_id: str, results_path: str | Path) -> None:
+                          model_names: List[str], subject_id: str, subject_acc_y, results_path: str | Path) -> None:
     """
     Generates and saves a figure with len(model_names) + 1 plots. The first plot corresponds to true labels over time,
     and the remaining plots correspond to the predictions of the models over time.
@@ -245,20 +248,26 @@ def _plot_all_predictions(labels: np.ndarray, expanded_predictions: List[List[in
     """
 
     n_preds = len(expanded_predictions)
-    fig, axes = plt.subplots(nrows=n_preds + 1, ncols=1, sharex=True, sharey=True, figsize=(30, 3 * (n_preds + 1)))
+    fig, axes = plt.subplots(nrows=n_preds + 2, ncols=1, sharex=True, sharey=False, figsize=(30, 3 * (n_preds + 1)))
     fig.suptitle(f"True labels vs Predicted labels", fontsize=24)
 
     # Plot true labels
-    axes[0].plot(labels, color='teal')
-    axes[0].set_title("True Labels", fontsize=18)
+    axes[0].plot(np.arange(len(subject_acc_y))[::100], subject_acc_y[::100], color='teal')
+    axes[0].set_title("y-ACC data", fontsize=18)
+
+    # Plot true labels
+    axes[1].plot(labels, color='teal')
+    axes[1].set_title("True Labels", fontsize=18)
 
     # Plot each prediction
-    for i, (pred, acc, name) in enumerate(zip(expanded_predictions, accuracies, model_names)):
+    for i, (pred, acc, name) in enumerate(zip(expanded_predictions, accuracies, model_names), start=1):
         axes[i + 1].plot(pred, color='darkorange')
         axes[i + 1].set_title(f"{name}: {acc}%", fontsize=18)
 
     # adjust layout
     plt.tight_layout(rect=(0.0, 0.0, 1.0, 0.97))
+
+    #plt.show()
 
     # save plots
     plt.savefig(os.path.join(results_path, f"results_fig_{subject_id}.svg"))
