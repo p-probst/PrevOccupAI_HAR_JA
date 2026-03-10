@@ -165,6 +165,7 @@ _Acquisition and Segmentation Protocol_
 
 To facilitate the segmentation of the sub-activities performed within te same session, short pauses were introduced 
 between segments. These pauses were:
+
 2. ten-seconds stops (no movement) for activities associated with walking.
 3. ten-seconds stops with a jump in the middle for activities performed while standing. 
 
@@ -212,7 +213,7 @@ This sessions consists of __two standing task__, each lasting  07:30 min (total 
 1. standing still. For participant comfort, this task was split into two segments recorded at the beginning and the end of the session.
 2. standing while conversing. Participants were instructed to stand naturally, simulating situations such as waiting for an elevator, a colleague, or in outside a meeting room.
 
-`waking/:`  
+`walking/:`  
 <p align="center">
 <img src="./figures/session_walk.svg " alt="Recording sessions for activities related to walking: walking at three different paces" width="400">
 </p>
@@ -316,6 +317,10 @@ When running the code, three folders are generated inside the defined output dir
 * `extracted_features/`: contains the extracted features for each subject as `.npy` files, as well as a `class_instances.json` file reporting the extracted features and the number of instances per main and sub-activity (class). This file is used to perform class balancing.
 * `results/`: contains the results for the MD and the ME datasets, respectively. The MD results contain the performance metrics (`.csv` file and confusion matrix) for each model as well as the trained models stored in `.joblib` files. The ME results contain the performance metrics of all three models and plots displaying the model output vs. the true labels for each subject.
 
-
-
+## 5. License
+The dataset is intended __strictly for non-commercial scientific and academic research purposes__, and its use is governed by the License CC BY-NC-ND 4.0 + No-Redistribution, included as LICENSE.txt in the dataset archive.
+By downloading and using the dataset, you agree to the terms of this license. In particular, please be aware that:
+* The dataset may not be redistributed, re-hosted, or mirrored on any third-party platform (e.g. GitHub, Zenodo, HuggingFace, Google Drive). Any interested parties must be directed to the official distribution point to request access independently.
+* The dataset may not be used for commercial purposes.
+* Any publication or presentation making use of the dataset must include the proper citation, as specified in Section 2 "Related Publication".
 
